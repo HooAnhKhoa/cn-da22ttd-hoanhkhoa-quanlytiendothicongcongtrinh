@@ -84,7 +84,7 @@
                         <div class="text-sm text-gray-500">{{ $project->owner->email }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {{ $project->start_date->format('d/m/Y') }}
+                        {{ $project->start_date }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 

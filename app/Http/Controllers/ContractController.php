@@ -6,6 +6,22 @@ use Illuminate\Http\Request;
 
 class ContractController extends Controller
 {
+    const STATUS_PENDING = 'pending';
+    const STATUS_ACTIVE = 'active';
+    const STATUS_COMPLETED = 'completed';
+    const STATUS_CANCELLED = 'cancelled';
+    const STATUS_SUSPENDED = 'suspended';
+
+    public static function getStatuses()
+    {
+        return [
+            self::STATUS_PENDING => 'Chờ xử lý',
+            self::STATUS_ACTIVE => 'Đang hoạt động',
+            self::STATUS_COMPLETED => 'Đã hoàn thành',
+            self::STATUS_CANCELLED => 'Đã hủy',
+            self::STATUS_SUSPENDED => 'Tạm dừng'
+        ];
+    }
     /**
      * Display a listing of the resource.
      */

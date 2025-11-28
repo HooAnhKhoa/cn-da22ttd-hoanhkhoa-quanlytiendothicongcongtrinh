@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Construction Management System - @yield('title')</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Thêm Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-100">
     <!-- Header -->
@@ -38,5 +42,8 @@
             });
         });
     </script>
+    
+    <!-- Stack scripts -->
+    @stack('scripts')
 </body>
 </html>

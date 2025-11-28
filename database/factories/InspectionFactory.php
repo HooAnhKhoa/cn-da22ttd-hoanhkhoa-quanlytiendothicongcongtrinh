@@ -27,5 +27,5 @@ class InspectionFactory extends Factory
         'date' => $date,
         'attached_files' => $this->faker->optional(0.4)->randomElement([['inspection_report.pdf'], ['photos.zip']]),
     ];
-}
+}   
 }

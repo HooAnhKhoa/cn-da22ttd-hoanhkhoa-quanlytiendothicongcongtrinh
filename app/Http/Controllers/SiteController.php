@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Site;
 use Illuminate\Http\Request;
 
 class SiteController extends Controller
@@ -10,9 +11,13 @@ class SiteController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        //
-    }
+{
+    $sites = Site::with(['project'])
+        ->latest()
+        ->paginate(12);
+
+    return view('sites.index', compact('sites'));
+}
 
     /**
      * Show the form for creating a new resource.
@@ -33,9 +38,12 @@ class SiteController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+public function show(Site $site)
     {
-        //
+        // Eager load relationships to avoid N+1 queries
+        $site->load(['project']);
+
+        return view('sites.show', compact('site'));
     }
 
     /**

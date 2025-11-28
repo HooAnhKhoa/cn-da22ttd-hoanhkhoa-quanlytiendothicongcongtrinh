@@ -43,19 +43,20 @@ class AuthController extends Controller
             'username' => 'required|unique:users',
             'email' => 'required|email|unique:users',
             'phone' => 'required',
-            'user_type' => 'required|in:owner,contractor,engineer',
-            'password' => 'required|min:6|confirmed'
+            'password' => 'required|min:6'
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
+        
+        $user_type = 'owner';
 
         User::create([
             'username' => $request->username,
             'email' => $request->email,
             'phone' => $request->phone,
-            'user_type' => $request->user_type,
+            'user_type' => $user_type,
             'password' => Hash::make($request->password),
             'status' => 'active'
         ]);

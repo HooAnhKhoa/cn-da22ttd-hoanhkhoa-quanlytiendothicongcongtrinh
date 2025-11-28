@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Project extends Model
 {
     use HasFactory;
-
+    
     protected $fillable = [
         'project_name',
         'owner_id',
@@ -20,6 +20,12 @@ class Project extends Model
         'total_budget',
         'description',
         'status'
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'total_budget' => 'decimal:2',
     ];
 
     // Relationships
@@ -61,5 +67,16 @@ class Project extends Model
     public function drawings()
     {
         return $this->hasMany(Drawing::class);
+    }
+
+    public static function getStatuses()
+    {
+        return [
+            'planning' => 'Đang lập kế hoạch',
+            'in_progress' => 'Đang thi công',
+            'on_hold' => 'Tạm dừng',
+            'completed' => 'Hoàn thành',
+            'cancelled' => 'Đã hủy'
+        ];
     }
 }
