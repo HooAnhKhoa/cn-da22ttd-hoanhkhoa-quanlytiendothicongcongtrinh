@@ -5,12 +5,12 @@
 @section('content')
 <div class="mb-6 flex justify-between items-center">
     <div>
-        <h1 class="text-3xl font-bold text-gray-800">Quản lý cong viec</h1>
-        <p class="text-gray-600">Danh sách tất cả cong viec trong hệ thống</p>
+        <h1 class="text-3xl font-bold text-gray-800">Quản lý công việc</h1>
+        <p class="text-gray-600">Danh sách tất cả công việc trong hệ thống</p>
     </div>
-    <a href="{{ route('projects.create') }}" 
+    <a href="{{ route('tasks.create') }}" 
        class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center">
-        <i class="fas fa-plus mr-2"></i>Thêm cong viec
+        <i class="fas fa-plus mr-2"></i>Thêm công việc
     </a>
 </div>
 
@@ -54,10 +54,10 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên cong viec</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cong truong</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên công việc</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Công trường</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày bắt đầu</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tien do</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tiến độ</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
                 </tr>

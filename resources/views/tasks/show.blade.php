@@ -11,7 +11,7 @@
                     <i class="fas fa-arrow-left mr-2"></i>Quay lại
                 </a>
             </nav>
-            <h1 class="text-3xl font-bold text-gray-800">Tên cong viec: {{ $task->task_name }}</h1>
+            <h1 class="text-3xl font-bold text-gray-800">Tên công việc: {{ $task->task_name }}</h1>
             <p class="text-xl text-gray-600 mt-2">Vị trí: {{ $task->location }}</p>
         </div>
         <div class="flex gap-2">
@@ -22,82 +22,23 @@
     </div>
 </div>
 
-<!-- task Stats -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center">
-            <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                <i class="fas fa-map-marker-alt text-xl"></i>
-            </div>
-            <div class="ml-4">
-                {{-- <p class="text-2xl font-semibold text-gray-900">{{ $task->sites->count() }}</p> --}}
-                <p class="text-sm font-medium text-gray-600">Công viec</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center">
-            <div class="p-3 rounded-full bg-green-100 text-green-600">
-                <i class="fas fa-flag-checkered text-xl"></i>
-            </div>
-            <div class="ml-4">
-                {{-- <p class="text-2xl font-semibold text-gray-900">{{ $task->milestones->count() }}</p> --}}
-                <p class="text-sm font-medium text-gray-600">Mốc quan trọng</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center">
-            <div class="p-3 rounded-full bg-purple-100 text-purple-600">
-                <i class="fas fa-file-contract text-xl"></i>
-            </div>
-            <div class="ml-4">
-                {{-- <p class="text-2xl font-semibold text-gray-900">{{ $task->contracts->count() }}</p> --}}
-                <p class="text-sm font-medium text-gray-600">Hợp đồng</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center">
-            <div class="p-3 rounded-full bg-orange-100 text-orange-600">
-                <i class="fas fa-info-circle text-xl"></i>
-            </div>
-            <div class="ml-4">
-                <p class="text-sm font-medium text-gray-600">Trạng thái</p>
-                <p class="text-lg font-semibold">
-                    <span class="inline-block px-2 py-1 text-xs rounded-full 
-                        @if($task->status == 'in_progress') bg-green-100 text-green-800
-                        @elseif($task->status == 'completed') bg-blue-100 text-blue-800
-                        @elseif($task->status == 'on_hold') bg-yellow-100 text-yellow-800
-                        @else bg-gray-100 text-gray-800 @endif">
-                        {{ \App\Models\Project::getStatuses()[$task->status] ?? $task->status }}
-                    </span>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Main Content Grid -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
     <!-- task Information -->
     <div class="bg-white rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200">
             <h2 class="text-xl font-semibold text-gray-800">
-                <i class="fas fa-info-circle mr-2"></i>Thông tin cong viec
+                <i class="fas fa-info-circle mr-2"></i>Thông tin công việc
             </h2>
         </div>
         <div class="p-6">
             <div class="space-y-4">
                 <div class="flex justify-between">
-                    <span class="text-gray-600">Tên cong viec:</span>
+                    <span class="text-gray-600">Tên công việc:</span>
                     <span class="font-medium text-gray-800">{{ $task->task_name }}</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600">Nhanh cua cong viec:</span>
+                    <span class="text-gray-600">Nhánh của công việc:</span>
                     @if($task->parent)
                         <a href="{{ route('tasks.show', $task->parent) }}" class="font-medium text-gray-800">{{ $task->parent->task_name }}</a>
                     @else
@@ -106,7 +47,7 @@
                     {{-- <span class="font-medium text-gray-800">{{ $task->location }}</span> --}}
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600">Cong truong:</span>
+                    <span class="text-gray-600">Công trường:</span>
                     <a href="{{ route('sites.show', $task->site)}}">
                         <span class="font-medium text-gray-800">{{ $task->site->site_name ?? 'N/A' }}</span>                
                     </a>
@@ -119,6 +60,13 @@
                     <span class="text-gray-600">Ngày kết thúc:</span>
                     <span class="font-medium text-gray-800">
                         {{ $task->end_date ? $task->end_date : 'Chưa xác định' }}
+                    </span>
+                </div>
+             
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Trạng thái:</span>
+                    <span class="font-medium text-gray-800">
+                        {{ \App\Models\Project::getStatuses()[$task->status] ?? $task->status }}
                     </span>
                 </div>
                 <div>
@@ -158,7 +106,7 @@
     <div class="bg-white rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200">
             <h2 class="text-xl font-semibold text-gray-800">
-                <i class="fas fa-users mr-2"></i>Đội ngũ dự án
+                <i class="fas fa-users mr-2"></i>Thông tin bổ sung
             </h2>
         </div>
         <div class="p-6">
@@ -170,22 +118,22 @@
                             <i class="fas fa-user-tie"></i>
                         </div>
                         <div>
-                            {{-- <div class="font-medium text-gray-800">{{ $task->owner->username }}</div> --}}
-                            <div class="text-sm text-gray-500">Chủ đầu tư</div>
+                            <div class="font-medium text-gray-800">Ngày tạo</div>
+                            <div class="text-sm text-gray-500">{{ $task->created_at }}</div>
                         </div>
                     </div>
                     {{-- <span class="text-sm text-gray-500">{{ $task->owner->email }}</span> --}}
                 </div>
 
-                <!-- Contractor -->
+                <!-- Contractor --> 
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
                             <i class="fas fa-hard-hat"></i>
                         </div>
                         <div>
-                            {{-- <div class="font-medium text-gray-800">{{ $task->contractor->username }}</div> --}}
-                            <div class="text-sm text-gray-500">Nhà thầu</div>
+                            <div class="font-medium text-gray-800">Cập nhật lần cuối</div>
+                            <div class="text-sm text-gray-500">{{ $task->updated_at}}</div>
                         </div>
                     </div>
                     {{-- <span class="text-sm text-gray-500">{{ $task->contractor->email }}</span> --}}
@@ -199,7 +147,7 @@
                         </div>
                         <div>
                             {{-- <div class="font-medium text-gray-800">{{ $task->engineer->username }}</div> --}}
-                            <div class="text-sm text-gray-500">Kỹ sư chính</div>
+                            <div class="text-sm text-gray-500">Loại</div>
                         </div>
                     </div>
                     {{-- <span class="text-sm text-gray-500">{{ $task->engineer->email }}</span> --}}

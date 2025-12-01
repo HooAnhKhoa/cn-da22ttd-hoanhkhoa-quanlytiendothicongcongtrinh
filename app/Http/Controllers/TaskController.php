@@ -17,12 +17,25 @@ class TaskController extends Controller
     }
 
     public function create()
-    {
-        $sites = Site::with('project')->get();
-        $parentTasks = Task::whereNull('parent_id')->get();
-        
-        return view('tasks.create', compact('sites', 'parentTasks'));
+{
+    // Lấy tất cả công trình
+    $sites = Site::orderBy('site_name')->get();
+    
+    // Lấy tất cả công việc và nhóm theo site_id
+    $allTasks = Task::orderBy('task_name')->get();
+    
+    // Nhóm công việc theo site_id để truyền sang view
+    $tasksBySite = [];
+    foreach ($allTasks as $task) {
+        $tasksBySite[$task->site_id][] = [
+            'id' => $task->id,
+            'task_name' => $task->task_name,
+            'parent_id' => $task->parent_id
+        ];
     }
+    
+    return view('tasks.create', compact('sites', 'tasksBySite'));
+}
 
     public function store(Request $request)
     {
@@ -49,33 +62,74 @@ class TaskController extends Controller
         return view('tasks.show', compact('task'));
     }
 
-    public function edit(Task $task)
-    {
-        $sites = Site::with('project')->get();
-        $parentTasks = Task::whereNull('parent_id')->where('id', '!=', $task->id)->get();
-        
-        return view('tasks.edit', compact('task', 'sites', 'parentTasks'));
-    }
+   public function edit(Task $task)
+{
+    // Lấy tất cả công trình
+    $sites = Site::orderBy('site_name')->get();
+    
+    // Lấy các công việc có thể làm cha (cùng công trình, không phải chính nó, không phải con của nó)
+    $parentTasks = Task::where('site_id', $task->site_id)
+        ->where('id', '!=', $task->id)
+        ->where(function($query) use ($task) {
+            // Loại trừ các công việc con của task hiện tại
+            $query->where('parent_id', '!=', $task->id)
+                  ->orWhereNull('parent_id');
+        })
+        ->orderBy('task_name')
+        ->get();
+    
+    return view('tasks.edit', compact('task', 'sites', 'parentTasks'));
+}
 
     public function update(Request $request, Task $task)
-    {
-        $validated = $request->validate([
-            'site_id' => 'required|exists:sites,id',
-            'parent_id' => 'nullable|exists:tasks,id',
-            'task_name' => 'required',
-            'description' => 'nullable',
-            'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after:start_date',
-            'planned_duration' => 'nullable|integer|min:0',
-            'actual_duration' => 'nullable|integer|min:0',
-            'progress_percent' => 'required|integer|min:0|max:100',
-            'status' => 'required|in:planned,in_progress,completed,on_hold,cancelled'
-        ]);
-
-        $task->update($validated);
-
-        return redirect()->route('tasks.index')->with('success', 'Công việc đã được cập nhật!');
+{
+    $validated = $request->validate([
+        'site_id' => 'required|exists:sites,id',
+        'task_name' => 'required|string|max:255',
+        'parent_id' => [
+            'nullable',
+            'exists:tasks,id',
+            function ($attribute, $value, $fail) use ($task) {
+                // Không cho chọn chính nó làm cha
+                if ($value == $task->id) {
+                    $fail('Không thể chọn chính công việc này làm công việc cha.');
+                }
+                
+                // Không cho chọn công việc con làm cha
+                if ($value && $this->isChildOf($task, $value)) {
+                    $fail('Không thể chọn công việc con làm công việc cha.');
+                }
+            }
+        ],
+        'description' => 'nullable|string',
+        'start_date' => 'required|date',
+        'end_date' => 'nullable|date|after_or_equal:start_date',
+        'planned_duration' => 'nullable|integer|min:0',
+        'progress_percent' => 'nullable|integer|min:0|max:100',
+        'status' => 'required|in:pending,planned,in_progress,on_hold,completed,cancelled',
+    ]);
+    
+    // Cập nhật task
+    $task->update($validated);
+    
+    return redirect()->route('tasks.show', $task)
+        ->with('success', 'Công việc đã được cập nhật thành công!');
+}
+private function isChildOf(Task $parent, $childId)
+{
+    $child = Task::find($childId);
+    if (!$child) return false;
+    
+    // Kiểm tra đệ quy
+    while ($child->parent_id) {
+        if ($child->parent_id == $parent->id) {
+            return true;
+        }
+        $child = Task::find($child->parent_id);
     }
+    
+    return false;
+}
 
     public function destroy(Task $task)
     {
