@@ -39,7 +39,7 @@ class Task extends Model
 
     public function progressUpdates()
     {
-        return $this->hasMany(ProgressUpdate::class);
+        return $this->hasMany(ProgressUpdate::class)->orderBy('date', 'desc');
     }
 
     public function delays()
@@ -57,6 +57,11 @@ class Task extends Model
         return $this->hasMany(EquipmentUsage::class);
     }
 
+    public function latestProgressUpdate()
+    {
+        return $this->hasOne(ProgressUpdate::class)->latestOfMany();
+    }
+
     public function inspections()
     {
         return $this->hasMany(Inspection::class);
@@ -65,5 +70,15 @@ class Task extends Model
     public function issues()
     {
         return $this->hasMany(Issue::class);
+    }
+    // Trong app/Models/Task.php
+    public function progressReports()
+    {
+        return $this->hasMany(ProgressUpdate::class)->orderBy('date', 'desc');
+    }
+
+    public function latestProgressReport()
+    {
+        return $this->hasOne(ProgressUpdate::class)->latestOfMany();
     }
 }

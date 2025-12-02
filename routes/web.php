@@ -40,7 +40,7 @@ Route::resource('users', UserController::class);
 Route::resource('projects', ProjectController::class);
 Route::resource('sites', SiteController::class);
 Route::resource('tasks', TaskController::class);
-Route::resource('progress-updates', ProgressUpdateController::class);
+Route::resource('progress_updates', ProgressUpdateController::class);
 Route::resource('milestones', MilestoneController::class);
 Route::resource('delays', DelayController::class);
 Route::resource('materials', MaterialController::class);
@@ -61,3 +61,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/password', [UserController::class, 'changePassword'])->name('profile.password');
 });
+
+Route::get('/progress_updates/task/{taskId}', [ProgressUpdateController::class, 'getTaskProgressUpdates']);
+Route::get('/progress_updates/{id}/chart', [ProgressUpdateController::class, 'progressChart'])->name('progress_updates.chart');
+Route::get('/progress_updates/{id}/download/{filename}', [ProgressUpdateController::class, 'downloadFile'])->name('progress_updates.download');

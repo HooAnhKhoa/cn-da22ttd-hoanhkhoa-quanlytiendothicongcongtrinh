@@ -37,7 +37,7 @@
                 <p class="px-3 text-xs font-semibold text-gray-500 uppercase">Tiến độ & Vật tư</p>
             </li>
             <li>
-                <a href="{{ route('progress-updates.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600">
+                <a href="{{ route('progress_updates.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600">
                     <i class="fas fa-chart-line w-6"></i>
                     <span>Cập nhật tiến độ</span>
                 </a>
