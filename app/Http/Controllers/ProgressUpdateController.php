@@ -14,8 +14,26 @@ class ProgressUpdateController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $query = ProgressUpdate::with(['task', 'user']);
+
+        // 🔹 Lọc theo công việc
+        if ($request->filled('task_id')) {
+            $query->where('task_id', $request->task_id);
+        }
+
+        // 🔹 Lọc từ ngày
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        // 🔹 Lọc đến ngày
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // 🔹 Sắp xếp mới nhất
         $progressUpdates = ProgressUpdate::with(['task', 'creator'])
             ->orderBy('date', 'desc')
             ->orderBy('created_at', 'desc')

@@ -42,7 +42,6 @@
                     <option value="newest">Mới nhất</option>
                     <option value="oldest">Cũ nhất</option>
                     <option value="name">Tên A-Z</option>
-                    <option value="progress">Tiến độ</option>
                 </select>
             </div>
             <div class="flex items-end">

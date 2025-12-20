@@ -2,63 +2,137 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Material;
+use App\Models\Task;
 use Illuminate\Http\Request;
 
 class MaterialController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // Hiển thị danh sách vật tư
+    public function index(Request $request)
     {
-        //
+        $query = Material::query();
+
+        // 🔍 Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('materials_name', 'like', "%{$search}%")
+                ->orWhere('supplier', 'like', "%{$search}%");
+            });
+        }
+
+        // 🏷️ Filter theo loại vật tư
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // 📦 Filter theo đơn vị
+        if ($request->filled('unit')) {
+            $query->where('unit', $request->unit);
+        }
+
+        // 📄 Phân trang
+        $materials = $query
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('materials.index', compact('materials'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    // Hiển thị form tạo vật tư
     public function create()
     {
-        //
+        $types = Material::getTypes();
+        $units = Material::getUnits();
+        
+        return view('materials.create', compact('types', 'units'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Lưu vật tư mới
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'materials_name' => 'required|string|max:255',
+            'unit' => 'required|string|max:255',
+            'type' => 'required|string|max:255',
+            'supplier' => 'required|string|max:255',
+        ]);
+
+        Material::create($validated);
+
+        return redirect()->route('materials.index')
+            ->with('success', 'Vật tư đã được tạo thành công!');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // Hiển thị chi tiết vật tư
+    public function show(Material $material)
     {
-        //
+        // Lấy lịch sử sử dụng vật tư
+        $usageHistory = $material->tasks()
+            ->orderBy('material_usages.usage_date', 'desc')
+            ->paginate(10);
+            
+        return view('materials.show', compact('material', 'usageHistory'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    // Hiển thị form chỉnh sửa
+    public function edit(Material $material)
     {
-        //
+        $types = Material::getTypes();
+        $units = Material::getUnits();
+        
+        return view('materials.edit', compact('material', 'types', 'units'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    // Cập nhật vật tư
+    public function update(Request $request, Material $material)
     {
-        //
+        $validated = $request->validate([
+            'materials_name' => 'required|string|max:255',
+            'unit' => 'required|string|max:255',
+            'type' => 'required|string|max:255',
+            'supplier' => 'required|string|max:255',
+        ]);
+
+        $material->update($validated);
+
+        return redirect()->route('materials.show', $material)
+            ->with('success', 'Vật tư đã được cập nhật thành công!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    // Xóa vật tư
+    public function destroy(Material $material)
     {
-        //
+        $material->delete();
+        
+        return redirect()->route('materials.index')
+            ->with('success', 'Vật tư đã được xóa thành công!');
+    }
+
+    // API: Lấy vật tư theo loại
+    public function getByType(Request $request)
+    {
+        $type = $request->get('type');
+        
+        $materials = Material::where('type', $type)->get();
+        
+        return response()->json($materials);
+    }
+
+    // Thống kê vật tư
+    public function statistics()
+    {
+        $totalMaterials = Material::count();
+        $byType = Material::groupBy('type')
+            ->selectRaw('type, count(*) as count')
+            ->get();
+        $bySupplier = Material::groupBy('supplier')
+            ->selectRaw('supplier, count(*) as count')
+            ->orderBy('count', 'desc')
+            ->limit(10)
+            ->get();
+            
+        return view('materials.statistics', compact('totalMaterials', 'byType', 'bySupplier'));
     }
 }

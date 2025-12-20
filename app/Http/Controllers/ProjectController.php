@@ -10,12 +10,38 @@ class ProjectController extends Controller
 {   
     public function index(Request $request)
     {
-        $projects = Project::with(['owner', 'contractor', 'engineer'])
-            ->latest()
-            ->paginate(12);
+        $query = Project::with(['owner', 'contractor', 'engineer']);
+
+        // 🔍 Tìm kiếm theo tên dự án
+        if ($request->filled('search')) {
+            $query->where('project_name', 'like', '%' . $request->search . '%');
+        }
+
+        // 🏷️ Lọc theo trạng thái
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // 🔃 Sắp xếp
+        switch ($request->sort) {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+
+            case 'name':
+                $query->orderBy('project_name', 'asc');
+                break;
+
+            default: // newest
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $projects = $query->paginate(12)->withQueryString();
 
         return view('projects.index', compact('projects'));
     }
+
 
     public function create()
     {

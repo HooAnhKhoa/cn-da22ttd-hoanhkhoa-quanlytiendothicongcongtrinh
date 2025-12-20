@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Site extends Model
@@ -28,6 +29,11 @@ class Site extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function tasks() : HasMany
+    {
+        return $this->hasMany(Task::class);
     }
 
     // KHÔNG có engineer(), contractor(), supervisor()

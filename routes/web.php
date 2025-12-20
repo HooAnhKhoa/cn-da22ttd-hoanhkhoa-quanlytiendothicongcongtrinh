@@ -43,7 +43,8 @@ Route::resource('progress_updates', ProgressUpdateController::class);
 Route::resource('milestones', MilestoneController::class);
 Route::resource('delays', DelayController::class);
 Route::resource('materials', MaterialController::class);
-Route::resource('material-usage', MaterialUsageController::class);
+Route::resource('material_usage', MaterialUsageController::class)
+    ->parameters(['material_usage' => 'materialUsage']);
 Route::resource('equipment', EquipmentController::class);
 Route::resource('equipment-usage', EquipmentUsageController::class);
 Route::resource('inspections', InspectionController::class);
@@ -65,3 +66,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/password', [UserController::class, 'changePassword'])->name('profile.password');
 });
+
+Route::get('materials/statistics', [MaterialController::class, 'statistics'])->name('materials.statistics');
+Route::get('materials/api/by-type', [MaterialController::class, 'getByType'])->name('materials.by-type');
+
+Route::get('material_usage/report', [MaterialUsageController::class, 'exportReport'])->name('material_usage.report');
+
+// Route tạo công việc từ site
+Route::get('tasks/create/{site}', [TaskController::class, 'createFromSite'])->name('tasks.create.from.site');

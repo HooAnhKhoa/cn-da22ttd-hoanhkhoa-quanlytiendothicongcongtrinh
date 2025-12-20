@@ -267,30 +267,6 @@
                                 </div> --}}
                             </div>
                             @endif
-                            
-                            <!-- Timeline comparison -->
-                            {{-- <div class="mt-4 pt-3 border-t border-gray-200 text-xs text-gray-500">
-                                <div class="flex justify-between">
-                                    <span>
-                                        <i class="far fa-clock mr-1"></i>Cập nhật: {{ $report->updated_at->format('d/m/Y H:i') }}
-                                    </span>
-                                    @if($loop->iteration < $task->progressReports->count())
-                                        @php
-                                            $prevReport = $task->progressReports->sortByDesc('date')->values()[$loop->iteration];
-                                            $progressChange = $report->progress_percent - $prevReport->progress_percent;
-                                        @endphp
-                                        @if($progressChange > 0)
-                                            <span class="text-green-600">
-                                                <i class="fas fa-arrow-up mr-1"></i>+{{ $progressChange }}% so với trước
-                                            </span>
-                                        @elseif($progressChange < 0)
-                                            <span class="text-red-600">
-                                                <i class="fas fa-arrow-down mr-1"></i>{{ $progressChange }}% so với trước
-                                            </span>
-                                        @endif
-                                    @endif
-                                </div>
-                            </div> --}}
                         </div>
                     </div>
                     @endforeach
@@ -343,6 +319,280 @@
     </div>
 </div>
 
+<!-- Vật tư đã sử dụng Section -->
+<div class="bg-white rounded-lg shadow mb-8">
+    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-gray-800">
+            <i class="fas fa-boxes mr-2"></i>Vật tư đã sử dụng
+            <span class="text-sm font-normal text-gray-500 ml-2">({{ $task->materialUsages->count() }} bản ghi)</span>
+        </h2>
+        <a href="{{ route('material_usage.create', ['task_id' => $task->id]) }}" 
+           class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-white hover:bg-green-700 transition-colors">
+            <i class="fas fa-plus mr-2"></i>Thêm vật tư
+        </a>
+    </div>
+    
+    <div class="p-6">
+        @if($task->materialUsages->count() > 0)
+            <!-- Material Usage Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-blue-100 rounded-lg mr-3">
+                            <i class="fas fa-boxes text-blue-600"></i>
+                        </div>
+                        <div>
+                            <div class="text-blue-600 font-bold text-xl">{{ $task->materialUsages->count() }}</div>
+                            <div class="text-gray-600 text-sm">Bản ghi sử dụng</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-green-100 rounded-lg mr-3">
+                            <i class="fas fa-weight text-green-600"></i>
+                        </div>
+                        <div>
+                            <div class="text-green-600 font-bold text-xl">
+                                @php
+                                    $totalQuantity = $task->materialUsages->sum('quantity');
+                                @endphp
+                                {{ number_format($totalQuantity, 2) }}
+                            </div>
+                            <div class="text-gray-600 text-sm">Tổng số lượng</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-purple-100 rounded-lg mr-3">
+                            <i class="fas fa-money-bill-wave text-purple-600"></i>
+                        </div>
+                        <div>
+                            <div class="text-purple-600 font-bold text-xl">
+                                @php
+                                    // Tính tổng chi phí ước tính
+                                    $estimatedCost = 0;
+                                    foreach($task->materialUsages as $usage) {
+                                        // Giả sử có trường unit_price trong model Material
+                                        $unitPrice = isset($usage->material->unit_price) ? $usage->material->unit_price : 0;
+                                        $estimatedCost += $usage->quantity * $unitPrice;
+                                    }
+                                    echo number_format($estimatedCost) . ' đ';
+                                @endphp
+                            </div>
+                            <div class="text-gray-600 text-sm">Chi phí ước tính</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-yellow-100 rounded-lg mr-3">
+                            <i class="fas fa-calendar-alt text-yellow-600"></i>
+                        </div>
+                        <div>
+                            <div class="text-yellow-600 font-bold text-xl">
+                                @if($task->materialUsages->isNotEmpty())
+                                    {{ \Carbon\Carbon::parse($task->materialUsages->max('usage_date'))->format('d/m/Y') }}
+                                @else
+                                    N/A
+                                @endif
+                            </div>
+                            <div class="text-gray-600 text-sm">Lần sử dụng cuối</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Material Usage Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STT</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên vật tư</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nhà cung cấp</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày sử dụng</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ghi chú</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($task->materialUsages as $index => $usage)
+                            @php
+                                $material = $usage->material;
+                            @endphp
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
+                                    {{ $index + 1 }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-box text-blue-600"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                @if($material)
+                                                    <a href="{{ route('materials.show', $material) }}" class="hover:text-blue-600">
+                                                        {{ $material->materials_name }}
+                                                    </a>
+                                                @else
+                                                    <span class="text-red-500">Vật tư đã bị xóa</span>
+                                                @endif
+                                            </div>
+                                            @if($material)
+                                            <div class="text-sm text-gray-500">
+                                                Đơn vị: {{ $material->unit }}
+                                            </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($material)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ \App\Models\Material::getTypes()[$material->type] ?? $material->type }}
+                                    </span>
+                                    @else
+                                    <span class="text-gray-400">N/A</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ $material->supplier ?? 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900 text-center">
+                                        {{ number_format($usage->quantity, 2) }}
+                                    </div>
+                                    @if($material)
+                                    <div class="text-xs text-gray-500 text-center">
+                                        {{ $material->unit }}
+                                    </div>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ \Carbon\Carbon::parse($usage->usage_date)->format('d/m/Y') }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    @if($usage->notes)
+                                        <div class="max-w-xs truncate" title="{{ $usage->notes }}">
+                                            {{ $usage->notes }}
+                                        </div>
+                                    @else
+                                        <span class="text-gray-400">Không có</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{{ route('material_usage.edit', $usage) }}" 
+                                           class="text-yellow-600 hover:text-yellow-900" 
+                                           title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{{ route('material_usage.destroy', $usage) }}" 
+                                              method="POST" 
+                                              class="inline"
+                                              onsubmit="return confirm('Bạn có chắc muốn xóa vật tư này khỏi công việc?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" 
+                                                    class="text-red-600 hover:text-red-900" 
+                                                    title="Xóa">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                        <!-- Total Row -->
+                        <tr class="bg-gray-50 font-semibold">
+                            <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                                TỔNG CỘNG:
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                {{ number_format($totalQuantity, 2) }}
+                            </td>
+                            <td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Material Usage by Type Chart -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <h4 class="font-semibold text-gray-700 mb-4">Phân bố vật tư theo loại:</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Bar Chart -->
+                    <div>
+                        <canvas id="materialTypeChart" height="200"></canvas>
+                    </div>
+                    
+                    <!-- Type Breakdown -->
+                    <div>
+                        <div class="space-y-3">
+                            @php
+                                $materialsByType = [];
+                                foreach($task->materialUsages as $usage) {
+                                    if ($usage->material) {
+                                        $type = $usage->material->type;
+                                        if (!isset($materialsByType[$type])) {
+                                            $materialsByType[$type] = [
+                                                'count' => 0,
+                                                'quantity' => 0,
+                                                'type_name' => \App\Models\Material::getTypes()[$type] ?? $type
+                                            ];
+                                        }
+                                        $materialsByType[$type]['count']++;
+                                        $materialsByType[$type]['quantity'] += $usage->quantity;
+                                    }
+                                }
+                            @endphp
+                            @foreach($materialsByType as $type => $data)
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 rounded-full mr-2" 
+                                             style="background-color: {{ $chartColors[$loop->index % count($chartColors)] ?? '#4f46e5' }}"></div>
+                                        <span class="text-sm font-medium text-gray-700">
+                                            {{ $data['type_name'] }}
+                                        </span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="font-bold text-gray-900">{{ $data['count'] }} bản ghi</span>
+                                        <div class="text-xs text-gray-500">
+                                            {{ number_format($data['quantity'], 2) }} đơn vị
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        @else
+            <!-- Empty state -->
+            <div class="text-center py-12">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
+                    <i class="fas fa-boxes text-3xl text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-700 mb-2">Chưa có vật tư nào được sử dụng</h3>
+                <p class="text-gray-500 mb-6">Hãy thêm vật tư đã sử dụng cho công việc này</p>
+                <a href="{{ route('material_usage.create', ['task_id' => $task->id]) }}" 
+                   class="inline-flex items-center px-6 py-3 bg-green-600 border border-transparent rounded-lg font-semibold text-white hover:bg-green-700 transition-colors">
+                    <i class="fas fa-plus mr-2"></i>Thêm vật tư đầu tiên
+                </a>
+            </div>
+        @endif
+    </div>
+</div>
+
 <!-- Action Buttons -->
 <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
     <div class="text-sm text-gray-500">
@@ -366,55 +616,99 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Tab switching functionality (if needed for future tabs)
-    const tabButtons = document.querySelectorAll('.tab-button');
-    
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const tabName = this.getAttribute('data-tab');
+    // Material Usage Chart
+    @if($task->materialUsages->count() > 0)
+        const materialTypeChart = document.getElementById('materialTypeChart');
+        if (materialTypeChart) {
+            // Dữ liệu cho biểu đồ
+            @php
+                $materialsByType = [];
+                foreach($task->materialUsages as $usage) {
+                    if ($usage->material) {
+                        $type = $usage->material->type;
+                        if (!isset($materialsByType[$type])) {
+                            $materialsByType[$type] = [
+                                'count' => 0,
+                                'quantity' => 0,
+                                'type_name' => \App\Models\Material::getTypes()[$type] ?? $type
+                            ];
+                        }
+                        $materialsByType[$type]['count']++;
+                        $materialsByType[$type]['quantity'] += $usage->quantity;
+                    }
+                }
+            @endphp
             
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.style.display = 'none';
-            });
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('border-blue-500', 'text-blue-600');
-                btn.classList.add('border-transparent', 'text-gray-500');
-            });
+            const chartColors = [
+                '#4f46e5', '#10b981', '#f59e0b', '#ef4444', 
+                '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'
+            ];
             
-            this.classList.add('border-blue-500', 'text-blue-600');
-            this.classList.remove('border-transparent', 'text-gray-500');
+            const typeLabels = [];
+            const typeCounts = [];
+            const typeColors = [];
+            const typeQuantities = [];
             
-            const target = document.getElementById('tab-' + tabName);
-            if (target) {
-                target.style.display = 'block';
-            }
-        });
-    });
-    
-    // Expand/collapse report descriptions
-    const reportDescriptions = document.querySelectorAll('.report-description');
-    reportDescriptions.forEach(desc => {
-        const content = desc.querySelector('.description-content');
-        const toggleBtn = desc.querySelector('.toggle-description');
-        
-        if (toggleBtn && content.textContent.length > 150) {
-            toggleBtn.style.display = 'block';
+            let colorIndex = 0;
+            @foreach($materialsByType as $type => $data)
+                typeLabels.push("{{ $data['type_name'] }}");
+                typeCounts.push({{ $data['count'] }});
+                typeQuantities.push({{ $data['quantity'] }});
+                typeColors.push(chartColors[{{ $loop->index }} % chartColors.length]);
+            @endforeach
             
-            toggleBtn.addEventListener('click', function() {
-                content.classList.toggle('line-clamp-3');
-                const icon = this.querySelector('i');
-                if (content.classList.contains('line-clamp-3')) {
-                    icon.className = 'fas fa-chevron-down';
-                    this.querySelector('span').textContent = 'Xem thêm';
-                } else {
-                    icon.className = 'fas fa-chevron-up';
-                    this.querySelector('span').textContent = 'Thu gọn';
+            new Chart(materialTypeChart, {
+                type: 'bar',
+                data: {
+                    labels: typeLabels,
+                    datasets: [{
+                        label: 'Số bản ghi',
+                        data: typeCounts,
+                        backgroundColor: typeColors,
+                        borderColor: typeColors.map(color => color.replace('0.8', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.parsed.y + ' bản ghi';
+                                    
+                                    // Thêm thông tin về tổng số lượng
+                                    const typeIndex = context.dataIndex;
+                                    const quantity = typeQuantities[typeIndex];
+                                    label += ` (${quantity.toFixed(2)} đơn vị)`;
+                                    
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
                 }
             });
         }
-    });
+    @endif
 });
 </script>
 @endpush
@@ -426,6 +720,18 @@ document.addEventListener('DOMContentLoaded', function() {
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* Tooltip styles for truncated text */
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Hover effect for material rows */
+.hover\:bg-gray-50:hover {
+    transition: background-color 0.2s ease;
 }
 </style>
 @endpush

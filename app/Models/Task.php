@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Task extends Model
 {
@@ -20,6 +22,12 @@ class Task extends Model
         'actual_duration',
         'progress_percent',
         'status'
+    ];
+
+    // Định dạng ngày tháng
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     public function site()
@@ -47,7 +55,7 @@ class Task extends Model
         return $this->hasMany(Delay::class);
     }
 
-    public function materialUsages()
+    public function materialUsages(): HasMany
     {
         return $this->hasMany(MaterialUsage::class);
     }
@@ -71,7 +79,7 @@ class Task extends Model
     {
         return $this->hasMany(Issue::class);
     }
-    // Trong app/Models/Task.php
+
     public function progressReports()
     {
         return $this->hasMany(ProgressUpdate::class)->orderBy('date', 'desc');
