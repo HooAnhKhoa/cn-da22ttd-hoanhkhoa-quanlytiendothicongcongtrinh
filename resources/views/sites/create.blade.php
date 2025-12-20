@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Tạo Dự Án Mới')
+@section('title', 'Tạo Công Trường Mới')
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
@@ -8,12 +8,12 @@
         <div class="flex justify-between items-start">
             <div class="w-full">
                 <nav class="mb-4">
-                    <a href="{{ route('projects.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 transition-colors">
+                    <a href="{{ route('sites.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 transition-colors">
                         <i class="fas fa-arrow-left mr-2"></i>Quay lại
                     </a>
                 </nav>
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">Thêm dự án mới</h1>
-                <p class="text-gray-600">Tạo dự án xây dựng mới trong hệ thống</p>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Thêm công trường mới</h1>
+                <p class="text-gray-600">Tạo công trường xây dựng mới trong hệ thống</p>
             </div>
         </div>
     </div>
@@ -21,27 +21,50 @@
     <div class="max-w-6xl mx-auto">
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
             
-            <form action="{{ route('projects.store') }}" method="POST" class="p-8">
+            <form action="{{ route('sites.store') }}" method="POST" class="p-8">
                 @csrf
                 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Cột trái -->
                     <div class="space-y-6">
-                        <!-- Tên dự án -->
+                        <!-- Tên công trường -->
                         <div>
-                            <label for="project_name" class="block text-lg font-semibold text-gray-800 mb-3">
-                                Tên dự án <span class="text-red-500">*</span>
+                            <label for="site_name" class="block text-lg font-semibold text-gray-800 mb-3">
+                                Tên công trường <span class="text-red-500">*</span>
                             </label>
                             <input 
                                 type="text" 
-                                name="project_name" 
-                                id="project_name"
-                                value="{{ old('project_name') }}"
+                                name="site_name" 
+                                id="site_name"
+                                value="{{ old('site_name') }}"
                                 class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all"
-                                placeholder="Nhập tên dự án..."
+                                placeholder="Nhập tên công trường..."
                                 required
                             >
-                            @error('project_name')
+                            @error('site_name')
+                                <p class="mt-2 text-base text-red-600 font-medium">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Dự án -->
+                        <div>
+                            <label for="project_id" class="block text-lg font-semibold text-gray-800 mb-3">
+                                Dự án <span class="text-red-500">*</span>
+                            </label>
+                            <select 
+                                name="project_id" 
+                                id="project_id"
+                                class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                                required
+                            >
+                                <option value="">Chọn dự án</option>
+                                @foreach($projects as $project)
+                                    <option value="{{ $project->id }}" {{ old('project_id') == $project->id ? 'selected' : '' }}>
+                                        {{ $project->project_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('project_id')
                                 <p class="mt-2 text-base text-red-600 font-medium">{{ $message }}</p>
                             @enderror
                         </div>
@@ -49,14 +72,14 @@
                         <!-- Mô tả -->
                         <div>
                             <label for="description" class="block text-lg font-semibold text-gray-800 mb-3">
-                                Mô tả dự án
+                                Mô tả công trường
                             </label>
                             <textarea 
                                 name="description" 
                                 id="description"
                                 rows="5"
                                 class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all"
-                                placeholder="Mô tả chi tiết về dự án..."
+                                placeholder="Mô tả chi tiết về công trường..."
                             >{{ old('description') }}</textarea>
                             @error('description')
                                 <p class="mt-2 text-base text-red-600 font-medium">{{ $message }}</p>
@@ -74,14 +97,17 @@
                                 id="location"
                                 value="{{ old('location') }}"
                                 class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all"
-                                placeholder="Nhập địa điểm dự án..."
+                                placeholder="Nhập địa điểm công trường..."
                                 required
                             >
                             @error('location')
                                 <p class="mt-2 text-base text-red-600 font-medium">{{ $message }}</p>
                             @enderror
                         </div>
+                    </div>
 
+                    <!-- Cột phải -->
+                    <div class="space-y-6">
                         <!-- Thông tin thời gian -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Ngày bắt đầu -->
@@ -119,32 +145,29 @@
                                 @enderror
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Cột phải -->
-                    <div class="space-y-6">
-                        <!-- Ngân sách -->
+                        <!-- Tiến độ -->
                         <div>
-                            <label for="total_budget" class="block text-lg font-semibold text-gray-800 mb-3">
-                                Ngân sách (VND) <span class="text-red-500">*</span>
+                            <label for="progress_percent" class="block text-lg font-semibold text-gray-800 mb-3">
+                                Tiến độ (%) <span class="text-red-500">*</span>
                             </label>
                             <div class="relative">
                                 <input 
                                     type="number" 
-                                    name="total_budget" 
-                                    id="total_budget"
-                                    value="{{ old('total_budget') }}"
+                                    name="progress_percent" 
+                                    id="progress_percent"
+                                    value="{{ old('progress_percent', 0) }}"
                                     class="w-full px-4 py-3 pr-12 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all"
                                     placeholder="0"
                                     min="0"
-                                    step="1000"
+                                    max="100"
                                     required
                                 >
                                 <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                                    <span class="text-gray-500 font-medium">₫</span>
+                                    <span class="text-gray-500 font-medium">%</span>
                                 </div>
                             </div>
-                            @error('total_budget')
+                            @error('progress_percent')
                                 <p class="mt-2 text-base text-red-600 font-medium">{{ $message }}</p>
                             @enderror
                         </div>
@@ -171,69 +194,22 @@
                                 <p class="mt-2 text-base text-red-600 font-medium">{{ $message }}</p>
                             @enderror
                         </div>
-
-                        <!-- Thông tin người dùng -->
+{{-- 
+                        <!-- Thông tin nhân sự -->
                         <div class="space-y-4">
-                            <h3 class="text-xl font-semibold text-gray-800 border-b pb-2">Thông tin người dùng</h3>
+                            <h3 class="text-xl font-semibold text-gray-800 border-b pb-2">Thông tin nhân sự</h3>
                             
-                            <!-- Chủ đầu tư -->
-                            <div>
-                                <label for="owner_id" class="block text-lg font-medium text-gray-700 mb-2">
-                                    Chủ đầu tư <span class="text-red-500">*</span>
-                                </label>
-                                <select 
-                                    name="owner_id" 
-                                    id="owner_id"
-                                    class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all"
-                                    required
-                                >
-                                    <option value="">Chọn chủ đầu tư</option>
-                                    @foreach($owners as $owner)
-                                        <option value="{{ $owner->id }}" {{ old('owner_id') == $owner->id ? 'selected' : '' }}>
-                                            {{ $owner->username }} ({{ $owner->email }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('owner_id')
-                                    <p class="mt-2 text-base text-red-600 font-medium">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Nhà thầu -->
-                            <div>
-                                <label for="contractor_id" class="block text-lg font-medium text-gray-700 mb-2">
-                                    Nhà thầu <span class="text-red-500">*</span>
-                                </label>
-                                <select 
-                                    name="contractor_id" 
-                                    id="contractor_id"
-                                    class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all"
-                                    required
-                                >
-                                    <option value="">Chọn nhà thầu</option>
-                                    @foreach($contractors as $contractor)
-                                        <option value="{{ $contractor->id }}" {{ old('contractor_id') == $contractor->id ? 'selected' : '' }}>
-                                            {{ $contractor->username }} ({{ $contractor->email }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('contractor_id')
-                                    <p class="mt-2 text-base text-red-600 font-medium">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Kỹ sư -->
+                            <!-- Kỹ sư chính -->
                             <div>
                                 <label for="engineer_id" class="block text-lg font-medium text-gray-700 mb-2">
-                                    Kỹ sư <span class="text-red-500">*</span>
+                                    Kỹ sư chính
                                 </label>
                                 <select 
                                     name="engineer_id" 
                                     id="engineer_id"
                                     class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all"
-                                    required
                                 >
-                                    <option value="">Chọn kỹ sư</option>
+                                    <option value="">Chọn kỹ sư chính</option>
                                     @foreach($engineers as $engineer)
                                         <option value="{{ $engineer->id }}" {{ old('engineer_id') == $engineer->id ? 'selected' : '' }}>
                                             {{ $engineer->username }} ({{ $engineer->email }})
@@ -244,6 +220,28 @@
                                     <p class="mt-2 text-base text-red-600 font-medium">{{ $message }}</p>
                                 @enderror
                             </div>
+
+                            <!-- Giám sát viên -->
+                            <div>
+                                <label for="contractor" class="block text-lg font-medium text-gray-700 mb-2">
+                                    Giám sát viên
+                                </label>
+                                <select 
+                                    name="contractor" 
+                                    id="contractor"
+                                    class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                                >
+                                    <option value="">Chọn giám sát viên</option>
+                                    @foreach($contractor as $contractor)
+                                        <option value="{{ $contractor->id }}" {{ old('contractor') == $contractor->id ? 'selected' : '' }}>
+                                            {{ $contractor->username }} ({{ $contractor->email }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('contractor')
+                                    <p class="mt-2 text-base text-red-600 font-medium">{{ $message }}</p>
+                                @enderror
+                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -255,7 +253,7 @@
                         class="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all text-lg font-semibold shadow-lg hover:shadow-xl"
                     >
                         <i class="fas fa-plus-circle mr-2"></i>
-                        Tạo dự án
+                        Tạo công trường
                     </button>
                 </div>
             </form>

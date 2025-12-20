@@ -19,7 +19,6 @@ use App\Http\Controllers\InspectionController;
 use App\Http\Controllers\MaterialUsageController;
 use App\Http\Controllers\EquipmentUsageController;
 use App\Http\Controllers\ProgressUpdateController;
-// ... import other controllers
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -29,16 +28,16 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Dashboard Routes
 Route::get('/project', [ProjectController::class, 'index'])->name('project');
-Route::get('/sites', [ProjectController::class, 'index'])->name('sites');
 Route::get('/tasks', [TaskController::class, 'index'])->name('tasks');
 Route::get('/users', [UserController::class, 'index'])->name('users');
 
-
-// Resource Routes
+// Resource Routes - QUAN TRỌNG: Sắp xếp theo thứ tự đúng
 Route::resource('users', UserController::class);
 Route::resource('projects', ProjectController::class);
-Route::resource('sites', SiteController::class);
+Route::resource('sites', SiteController::class); // ĐÃ ĐƯỢC SỬA
 Route::resource('tasks', TaskController::class);
 Route::resource('progress_updates', ProgressUpdateController::class);
 Route::resource('milestones', MilestoneController::class);
@@ -54,6 +53,11 @@ Route::resource('drawings', DrawingController::class);
 Route::resource('contracts', ContractController::class);
 Route::resource('payments', PaymentController::class);
 
+// Progress updates custom routes
+Route::get('/progress_updates/task/{taskId}', [ProgressUpdateController::class, 'getTaskProgressUpdates']);
+Route::get('/progress_updates/{id}/chart', [ProgressUpdateController::class, 'progressChart'])->name('progress_updates.chart');
+Route::get('/progress_updates/{id}/download/{filename}', [ProgressUpdateController::class, 'downloadFile'])->name('progress_updates.download');
+
 // Profile routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [UserController::class, 'profile'])->name('profile');
@@ -61,7 +65,3 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/password', [UserController::class, 'changePassword'])->name('profile.password');
 });
-
-Route::get('/progress_updates/task/{taskId}', [ProgressUpdateController::class, 'getTaskProgressUpdates']);
-Route::get('/progress_updates/{id}/chart', [ProgressUpdateController::class, 'progressChart'])->name('progress_updates.chart');
-Route::get('/progress_updates/{id}/download/{filename}', [ProgressUpdateController::class, 'downloadFile'])->name('progress_updates.download');

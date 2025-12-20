@@ -5,7 +5,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-6">
     <!-- Header -->
-    <div class="mb-6 flex justify-between items-center">
+    {{-- <div class="mb-6 flex justify-between items-center">
         <div>
             <h1 class="text-3xl font-bold text-gray-800">{{ $site->site_name }}</h1>
             <p class="text-gray-600">Chi tiết công trường</p>
@@ -20,7 +20,25 @@
                 <i class="fas fa-arrow-left mr-2"></i>Quay lại
             </a>
         </div>
+    </div> --}}
+<div class="mb-6">
+    <div class="flex justify-between items-start">
+        <div>
+            <nav class="mb-4">
+                <a href="{{ route('sites.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>Quay lại
+                </a>
+            </nav>
+            <h1 class="text-3xl font-bold text-gray-800">{{ $site->site_name }}</h1>
+            <p class="text-gray-600">Chi tiết công trường</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{{ route('sites.edit', $site) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-white hover:bg-blue-700 transition-colors">
+                <i class="fas fa-edit mr-2"></i>Chỉnh sửa
+            </a>
+        </div>
     </div>
+</div>
 
     <!-- Thông báo -->
     @include('components.alert')

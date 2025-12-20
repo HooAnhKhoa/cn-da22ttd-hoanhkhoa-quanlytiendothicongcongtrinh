@@ -43,26 +43,14 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('milestones.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600">
-                    <i class="fas fa-flag-checkered w-6"></i>
-                    <span>Mốc quan trọng</span>
-                </a>
-            </li>
-            <li>
                 <a href="{{ route('materials.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600">
                     <i class="fas fa-boxes w-6"></i>
                     <span>Vật tư</span>
                 </a>
             </li>
-            <li>
-                <a href="{{ route('equipment.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600">
-                    <i class="fas fa-tools w-6"></i>
-                    <span>Thiết bị</span>
-                </a>
-            </li>
             
             <!-- Quản lý chất lượng -->
-            <li class="mt-6">
+            {{-- <li class="mt-6">
                 <p class="px-3 text-xs font-semibold text-gray-500 uppercase">Quản lý chất lượng</p>
             </li>
             <li>
@@ -82,7 +70,7 @@
                     <i class="fas fa-clock w-6"></i>
                     <span>Độ trễ</span>
                 </a>
-            </li>
+            </li> --}}
             
             <!-- Hợp đồng & Tài chính -->
             <li class="mt-6">
@@ -102,7 +90,7 @@
             </li>
             
             <!-- Tài liệu -->
-            <li class="mt-6">
+            {{-- <li class="mt-6">
                 <p class="px-3 text-xs font-semibold text-gray-500 uppercase">Tài liệu</p>
             </li>
             <li>
@@ -116,7 +104,7 @@
                     <i class="fas fa-drafting-compass w-6"></i>
                     <span>Bản vẽ</span>
                 </a>
-            </li>
+            </li> --}}
             
             <!-- Quản lý hệ thống -->
             @if(auth()->user()->user_type === 'admin')

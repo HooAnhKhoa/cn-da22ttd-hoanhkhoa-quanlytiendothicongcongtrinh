@@ -2,30 +2,43 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Site extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'project_id',
-        'site_name', 
+        'site_name',
         'description',
         'start_date',
         'end_date',
         'progress_percent',
         'status'
+        // KHÔNG có engineer_id, contractor_id, supervisor_id
     ];
 
-    public function project()
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'progress_percent' => 'integer'
+    ];
+
+    // Quan hệ với Project
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
-    public function tasks()
+    // KHÔNG có engineer(), contractor(), supervisor()
+    public static function getStatuses(): array
     {
-        return $this->hasMany(Task::class);
+        return [
+            'planned' => 'Đã lên kế hoạch',
+            'in_progress' => 'Đang triển khai',
+            'completed' => 'Đã hoàn thành',
+            'on_hold' => 'Tạm dừng',
+            'cancelled' => 'Đã hủy',
+        ];
     }
 }
