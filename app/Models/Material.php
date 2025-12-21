@@ -24,12 +24,17 @@ class Material extends Model
         return $this->hasMany(MaterialUsage::class);
     }
 
+    public function usages()
+    {
+        return $this->hasMany(MaterialUsage::class);
+    }
+
     // Quan hệ với Task qua bảng trung gian
      public function tasks()
     {
         return $this->belongsToMany(Task::class, 'material_usages')
                     ->using(MaterialUsage::class)
-                    ->withPivot('quantity', 'usage_date', 'notes');
+                    ->withPivot('quantity', 'usage_date');
     }
 
     // Scope tìm kiếm

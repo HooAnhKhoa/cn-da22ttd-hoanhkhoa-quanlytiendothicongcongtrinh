@@ -3,7 +3,10 @@
     <nav class="p-4">
         <ul class="space-y-2">
             <li>
-                <a href="{{ route('home') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600">
+                <a href="{{ route('home') }}"
+                    class="flex items-center space-x-3 p-3 rounded-lg
+                    {{ request()->routeIs('home') ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
+
                     <i class="fas fa-tachometer-alt w-6"></i>
                     <span>Dashboard</span>
                 </a>
@@ -14,19 +17,28 @@
                 <p class="px-3 text-xs font-semibold text-gray-500 uppercase">Quản lý dự án</p>
             </li>
             <li>
-                <a href="{{ route('projects.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600">
+                <a href="{{ route('projects.index') }}"
+                    class="flex items-center space-x-3 p-3 rounded-lg
+                    {{ request()->routeIs('projects.*') ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
+                        
                     <i class="fas fa-project-diagram w-6"></i>
                     <span>Dự án</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('sites.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600">
+                <a href="{{ route('sites.index') }}"
+                    class="flex items-center space-x-3 p-3 rounded-lg
+                    {{ request()->routeIs('sites.*') ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
+                        
                     <i class="fas fa-map-marker-alt w-6"></i>
                     <span>Công trường</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('tasks.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600">
+                <a href="{{ route('tasks.index') }}"
+                    class="flex items-center space-x-3 p-3 rounded-lg
+                    {{ request()->routeIs('tasks.*') ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
+                        
                     <i class="fas fa-tasks w-6"></i>
                     <span>Công việc</span>
                 </a>
@@ -37,13 +49,20 @@
                 <p class="px-3 text-xs font-semibold text-gray-500 uppercase">Tiến độ & Vật tư</p>
             </li>
             <li>
-                <a href="{{ route('progress_updates.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600">
+                <a href="{{ route('progress_updates.index') }}"
+                    class="flex items-center space-x-3 p-3 rounded-lg
+                    {{ request()->routeIs('progress_updates.*') ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
+
                     <i class="fas fa-chart-line w-6"></i>
                     <span>Cập nhật tiến độ</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('materials.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600">
+                <a href="{{ route('materials.index') }}"
+                
+                    class="flex items-center space-x-3 p-3 rounded-lg
+                    {{ request()->routeIs('materials.*') ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
+
                     <i class="fas fa-boxes w-6"></i>
                     <span>Vật tư</span>
                 </a>

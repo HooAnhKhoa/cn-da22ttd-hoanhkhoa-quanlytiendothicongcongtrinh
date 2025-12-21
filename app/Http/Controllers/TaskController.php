@@ -8,12 +8,47 @@ use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = Task::with(['site.project'])
-            ->latest()
-            ->paginate(12);
-        return view('tasks.index', compact('tasks'));
+        $query = Task::with('site');
+        
+        // Tìm kiếm theo tên công việc
+        if ($request->has('search') && $request->search != '') {
+            $query->where('task_name', 'like', '%' . $request->search . '%');
+        }
+        
+        // Lọc theo công trường
+        if ($request->has('site') && $request->site != '') {
+            $query->where('site_id', $request->site);
+        }
+        
+        // Lọc theo trạng thái
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+        
+        // Sắp xếp
+        if ($request->has('sort')) {
+            switch ($request->sort) {
+                case 'oldest':
+                    $query->orderBy('created_at', 'asc');
+                    break;
+                case 'name':
+                    $query->orderBy('task_name', 'asc');
+                    break;
+                case 'newest':
+                default:
+                    $query->orderBy('created_at', 'desc');
+                    break;
+            }
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+        
+        $tasks = $query->paginate(10);
+        $sites = Site::orderBy('site_name')->get(); // Lấy danh sách công trường
+        
+        return view('tasks.index', compact('tasks', 'sites'));
     }
 
     public function create()

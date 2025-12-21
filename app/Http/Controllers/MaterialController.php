@@ -68,13 +68,14 @@ class MaterialController extends Controller
     // Hiển thị chi tiết vật tư
     public function show(Material $material)
     {
-        // Lấy lịch sử sử dụng vật tư
-        $usageHistory = $material->tasks()
-            ->orderBy('material_usages.usage_date', 'desc')
+        $usageHistory = $material->usages()
+            ->with(['task.site'])
+            ->orderBy('usage_date', 'desc')
             ->paginate(10);
-            
+
         return view('materials.show', compact('material', 'usageHistory'));
     }
+
 
     // Hiển thị form chỉnh sửa
     public function edit(Material $material)

@@ -44,7 +44,8 @@ class Site extends Model
             'in_progress' => 'Đang triển khai',
             'completed' => 'Đã hoàn thành',
             'on_hold' => 'Tạm dừng',
-            'cancelled' => 'Đã hủy',
+            'cancelled' => 'Đã hủy',    
         ];
     }
+    
 }

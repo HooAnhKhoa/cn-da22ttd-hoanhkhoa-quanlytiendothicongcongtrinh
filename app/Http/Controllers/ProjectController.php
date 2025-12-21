@@ -90,7 +90,22 @@ class ProjectController extends Controller
 
     public function show(Project $project)
     {
-        $project->load(['owner', 'contractor', 'engineer', 'sites', 'milestones', 'contracts']);
+        $project->load([
+            'owner',
+            'contractor', 
+            'engineer',
+            'sites' => function($query) {
+                // Load số lượng tasks và tổng vật liệu đã dùng
+                $query->withCount(['tasks'])
+                    ->with(['tasks' => function($taskQuery) {
+                        $taskQuery->withCount(['materialUsages'])
+                                ->withSum('materialUsages as total_material_quantity', 'quantity');
+                    }]);
+            },
+            'milestones',
+            'contracts'
+        ]);
+        
         return view('projects.show', compact('project'));
     }
 

@@ -16,11 +16,21 @@
 
 <!-- Bộ lọc và tìm kiếm -->
 <div class="bg-white rounded-lg shadow p-6 mb-6">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4"> <!-- Đổi từ 4 thành 5 -->
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm</label>
-            <input type="text" id="search" placeholder="Tìm kiếm cong viec..." 
+            <input type="text" id="search" placeholder="Tìm kiếm công việc..." 
                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <!-- Thêm filter công trường -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Công trường</label>
+            <select id="site-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Tất cả công trường</option>
+                @foreach($sites as $site)
+                <option value="{{ $site->id }}">{{ $site->site_name }}</option>
+                @endforeach
+            </select>
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
@@ -149,6 +159,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('search');
+    const siteFilter = document.getElementById('site-filter');
     const statusFilter = document.getElementById('status-filter');
     const sortSelect = document.getElementById('sort');
     const resetButton = document.getElementById('reset-filters');
@@ -157,26 +168,29 @@ document.addEventListener('DOMContentLoaded', function() {
         const params = new URLSearchParams();
         
         if (searchInput.value) params.set('search', searchInput.value);
+        if (siteFilter.value) params.set('site', siteFilter.value);
         if (statusFilter.value) params.set('status', statusFilter.value);
         if (sortSelect.value) params.set('sort', sortSelect.value);
         
-        window.location.href = '{{ route('projects.index') }}?' + params.toString();
+        window.location.href = '{{ route('tasks.index') }}?' + params.toString(); // Sửa route từ projects.index thành tasks.index
     }
 
     searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') applyFilters();
     });
 
+    siteFilter.addEventListener('change', applyFilters);
     statusFilter.addEventListener('change', applyFilters);
     sortSelect.addEventListener('change', applyFilters);
 
     resetButton.addEventListener('click', function() {
-        window.location.href = '{{ route('projects.index') }}';
+        window.location.href = '{{ route('tasks.index') }}'; // Sửa route từ projects.index thành tasks.index
     });
 
     // Set current values from URL
     const urlParams = new URLSearchParams(window.location.search);
     searchInput.value = urlParams.get('search') || '';
+    siteFilter.value = urlParams.get('site') || '';
     statusFilter.value = urlParams.get('status') || '';
     sortSelect.value = urlParams.get('sort') || 'newest';
 });

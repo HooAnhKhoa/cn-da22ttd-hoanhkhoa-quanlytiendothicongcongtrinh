@@ -22,6 +22,10 @@ return new class extends Migration
             $table->enum('status', ['planned', 'in_progress', 'completed', 'on_hold', 'cancelled'])->default('planned');
             $table->timestamps();
 
+            Schema::table('sites', function (Blueprint $table) {
+                $table->decimal('progress_percent', 5, 2)->default(0)->after('status');
+            });
+
 // - id
 // - project_id (FK)
 // - site_code

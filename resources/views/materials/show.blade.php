@@ -142,7 +142,7 @@
                                     @endphp
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-4 py-3 text-sm text-gray-900">
-                                            {{ $usage->pivot->usage_date }}
+                                            {{ $usage->usage_date }}
                                         </td>
                                         <td class="px-4 py-3">
                                             <a href="{{ route('tasks.show', $usage) }}" 
@@ -157,7 +157,7 @@
                                         </td>
                                         <td class="px-4 py-3">
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                {{ $usage->pivot->quantity }} {{ $material->unit }}
+                                                {{ $usage->quantity }} {{ $material->unit }}
                                             </span>
                                         </td>
                                         <td class="px-4 py-3 text-sm text-gray-900">
@@ -231,11 +231,12 @@
                 </h3>
                 <div class="space-y-3">
                     @php
-                        $totalUsage = $material->tasks()->sum('material_usages.quantity');
-                        $usageCount = $material->tasks()->count();
-                        $firstUsage = $material->tasks()->orderBy('material_usages.usage_date')->first();
-                        $lastUsage = $material->tasks()->orderBy('material_usages.usage_date', 'desc')->first();
+                        $totalUsage = $material->usages()->sum('quantity');
+                        $usageCount = $material->usages()->count();
+                        $firstUsage = $material->usages()->orderBy('usage_date')->first();
+                        $lastUsage  = $material->usages()->orderBy('usage_date', 'desc')->first();
                     @endphp
+
                     
                     <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                         <span class="text-sm text-gray-600">Tổng số lần sử dụng</span>
@@ -248,13 +249,13 @@
                     @if($firstUsage)
                         <div class="p-3 bg-gray-50 rounded-lg">
                             <p class="text-sm text-gray-600 mb-1">Lần đầu sử dụng</p>
-                            <p class="font-medium">{{ $firstUsage->pivot->usage_date}}</p>
+                            <p class="font-medium">{{ $firstUsage->usage_date}}</p>
                         </div>
                     @endif
                     @if($lastUsage)
                         <div class="p-3 bg-gray-50 rounded-lg">
                             <p class="text-sm text-gray-600 mb-1">Lần cuối sử dụng</p>
-                            <p class="font-medium">{{ $lastUsage->pivot->usage_date}}</p>
+                            <p class="font-medium">{{ $lastUsage->usage_date}}</p>
                         </div>
                     @endif
                 </div>
