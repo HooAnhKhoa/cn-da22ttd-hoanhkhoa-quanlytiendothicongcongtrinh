@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProgressUpdate;
-use App\Models\Task;
+use App\Models\Admin\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -39,7 +39,7 @@ class ProgressUpdateController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
         
-        return view('progress_updates.index', compact('progressUpdates'));
+        return view('admin.progress_updates.index', compact('progressUpdates'));
     }
 
     /**
@@ -58,7 +58,7 @@ class ProgressUpdateController extends Controller
                 ->get();
         }
         
-        return view('progress_updates.create', compact('tasks', 'taskId'));
+        return view('admin.progress_updates.create', compact('tasks', 'taskId'));
     }
 
     /**
@@ -106,7 +106,7 @@ class ProgressUpdateController extends Controller
             $task->save();
         }
 
-        return redirect()->route('tasks.show', $request->task_id)
+        return redirect()->route('admin.tasks.show', $request->task_id)
             ->with('success', 'Báo cáo tiến độ đã được tạo thành công!');
     }
 

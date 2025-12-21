@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Material;
 use App\Models\Task;
 use Illuminate\Http\Request;
+use App\Models\Material;
 
 class MaterialController extends Controller
 {
@@ -37,7 +37,7 @@ class MaterialController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('materials.index', compact('materials'));
+        return view('admin.materials.index', compact('materials'));
     }
 
     // Hiển thị form tạo vật tư

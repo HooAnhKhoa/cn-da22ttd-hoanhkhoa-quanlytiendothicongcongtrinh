@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Material;
-use App\Models\Task;
-use App\Models\MaterialUsage;
+use App\Models\Admin\Task;
 use Illuminate\Http\Request;
+use App\Models\MaterialUsage;
 
 class MaterialUsageController extends Controller
 {
@@ -30,7 +30,7 @@ class MaterialUsageController extends Controller
         $tasks = Task::all();
         $materials = Material::all();
         
-        return view('material_usage.create', compact('material', 'task', 'tasks', 'materials'));
+        return view('admin.material_usage.create', compact('material', 'task', 'tasks', 'materials'));
     }
     
     public function store(Request $request)
@@ -54,7 +54,7 @@ class MaterialUsageController extends Controller
         
         MaterialUsage::create($validated);
         
-        return redirect()->route('tasks.show', $validated['task_id'])
+        return redirect()->route('admin.tasks.show', $validated['task_id'])
             ->with('success', 'Vật tư đã được thêm vào công việc!');
     }
     

@@ -24,7 +24,18 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->intended('/');
+            
+            $user = Auth::user();
+            
+            // Điều hướng theo user_type của người dùng
+            if ($user->user_type === 'admin') {
+                return redirect()->intended(route('admin.dashboard'));
+            } elseif ($user->user_type === 'client') {
+                return redirect()->intended(route('client.dashboard'));
+            } else {
+                // Nếu có các user_type khác, thêm điều hướng ở đây
+                return redirect()->intended('/');
+            }
         }
 
         return back()->withErrors([
@@ -40,28 +51,31 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'username' => 'required|unique:users',
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
-            'phone' => 'required',
-            'password' => 'required|min:6'
+            'password' => 'required|min:8|confirmed',
+            'phone' => 'nullable|string|max:20',
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
         
-        $user_type = 'owner';
-
-        User::create([
-            'username' => $request->username,
+        // Tạo user với user_type mặc định là 'client'
+        $user = User::create([
+            'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
-            'user_type' => $user_type,
+            'user_type' => 'client', // Mặc định là client
             'password' => Hash::make($request->password),
             'status' => 'active'
         ]);
 
-        return redirect('/login')->with('success', 'Đăng ký thành công! Vui lòng đăng nhập.');
+        // Đăng nhập tự động sau khi đăng ký
+        Auth::login($user);
+
+        return redirect()->route('client.dashboard')
+            ->with('success', 'Đăng ký thành công! Chào mừng đến với BuildManage.');
     }
 
     public function logout(Request $request)

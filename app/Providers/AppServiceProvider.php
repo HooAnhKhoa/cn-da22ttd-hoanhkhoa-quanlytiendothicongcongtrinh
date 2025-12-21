@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
-use App\Models\Task;
-use App\Observers\TaskObserver;
 use Illuminate\Support\ServiceProvider;
+use App\Models\Admin\Task;
+use App\Models\ProgressUpdate;
+use App\Observers\TaskObserver;
+use App\Observers\ProgressUpdateObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,5 +24,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Task::observe(TaskObserver::class);
+        ProgressUpdate::observe(ProgressUpdateObserver::class);
     }
 }

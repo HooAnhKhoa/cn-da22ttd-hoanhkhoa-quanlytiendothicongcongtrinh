@@ -34,13 +34,13 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('projects.index') }}" class="flex items-center text-blue-200 hover:text-white transition-colors text-sm">
+                        <a href="#" class="flex items-center text-blue-200 hover:text-white transition-colors text-sm">
                             <i class="fas fa-project-diagram w-5 mr-3 text-center"></i>
                             Dự án
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('tasks.index') }}" class="flex items-center text-blue-200 hover:text-white transition-colors text-sm">
+                        <a href="#" class="flex items-center text-blue-200 hover:text-white transition-colors text-sm">
                             <i class="fas fa-tasks w-5 mr-3 text-center"></i>
                             Công việc
                         </a>

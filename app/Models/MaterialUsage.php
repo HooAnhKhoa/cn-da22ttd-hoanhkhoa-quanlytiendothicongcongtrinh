@@ -41,4 +41,10 @@ class MaterialUsage extends Model
     {
         return $this->hasOneThrough(Site::class, Task::class, 'id', 'id', 'task_id', 'site_id');
     }
+
+    // Quan hệ với User (người ghi nhận)
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
