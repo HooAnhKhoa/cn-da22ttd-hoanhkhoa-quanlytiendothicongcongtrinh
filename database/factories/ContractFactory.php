@@ -44,7 +44,7 @@ class ContractFactory extends Factory
             'contract_value' => $this->faker->randomFloat(2, 50000, 2000000),
             'signed_date' => $signedDate,
             'due_date' => $dueDate,
-            'status' => $this->faker->randomElement(['active', 'completed', 'terminated']),
+            'status' => $this->faker->randomElement(['active', 'completed', 'terminated', 'on_hold']),
         ];
     }
 }

@@ -18,13 +18,13 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->date('start_date');
             $table->date('end_date')->nullable();
-            $table->unsignedTinyInteger('progress_percent')->default(0);
+            // Chỉ giữ lại một khai báo progress_percent duy nhất
+            // Sử dụng decimal(5,2) để lưu được độ chính xác cao hơn (ví dụ 99.50%)
+            $table->decimal('progress_percent', 5, 2)->default(0); 
             $table->enum('status', ['planned', 'in_progress', 'completed', 'on_hold', 'cancelled'])->default('planned');
             $table->timestamps();
 
-            Schema::table('sites', function (Blueprint $table) {
-                $table->decimal('progress_percent', 5, 2)->default(0)->after('status');
-            });
+
 
 // - id
 // - project_id (FK)

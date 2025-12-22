@@ -3,289 +3,307 @@
 @section('title', 'Quản lý Hợp đồng')
 
 @section('content')
-<div class="mb-6 flex justify-between items-center">
-    <div>
-        <h1 class="text-3xl font-bold text-gray-800">Quản lý Hợp đồng</h1>
-        <p class="text-gray-600">Danh sách tất cả hợp đồng trong hệ thống</p>
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div class="mb-4 md:mb-0">
+            <h1 class="text-3xl font-bold text-gray-900">Quản lý Hợp đồng</h1>
+            <p class="text-gray-600 mt-2">Danh sách hợp đồng trong hệ thống</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{{ route('admin.contracts.create') }}" 
+               class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Thêm Hợp đồng
+            </a>
+        </div>
     </div>
-    <a href="{{ route('admin.contracts.create') }}" 
-       class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center">
-        <i class="fas fa-plus mr-2"></i>Tạo hợp đồng mới
-    </a>
-</div>
 
-<!-- Bộ lọc và tìm kiếm -->
-<div class="bg-white rounded-lg shadow p-6 mb-6">
-    <form method="GET" action="{{ route('admin.contracts.index') }}">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <!-- Search and Filter -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+        <form method="GET" action="{{ route('admin.contracts.index') }}" class="space-y-4 md:space-y-0 md:grid md:grid-cols-4 md:gap-4">
+            <!-- Search -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm</label>
-                <input type="text" name="search" value="{{ request('search') }}" 
-                       placeholder="Tìm kiếm hợp đồng..." 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="relative">
+                    <input type="text" 
+                           name="search" 
+                           value="{{ request('search') }}"
+                           placeholder="Mã hợp đồng, nhà thầu..."
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                </div>
             </div>
-            
+
+            <!-- Project Filter -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Dự án</label>
-                <select name="project_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select name="project_id" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        onchange="this.form.submit()">
                     <option value="">Tất cả dự án</option>
                     @foreach($projects as $project)
-                    <option value="{{ $project->id }}" {{ request('project_id') == $project->id ? 'selected' : '' }}>
-                        {{ $project->project_name }}
-                    </option>
+                        <option value="{{ $project->id }}" {{ request('project_id') == $project->id ? 'selected' : '' }}>
+                            {{ $project->project_name }}
+                        </option>
                     @endforeach
                 </select>
             </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Nhà thầu</label>
-                <select name="contractor_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">Tất cả nhà thầu</option>
-                    @foreach($contractors as $contractor)
-                    <option value="{{ $contractor->id }}" {{ request('contractor_id') == $contractor->id ? 'selected' : '' }}>
-                        {{ $contractor->name }}
-                    </option>
-                    @endforeach
-                </select>
-            </div>
-            
+
+            <!-- Status Filter -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
-                <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select name="status" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        onchange="this.form.submit()">
                     <option value="">Tất cả trạng thái</option>
-                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ xử lý</option>
-                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Đang hoạt động</option>
-                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Hoàn thành</option>
-                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Đã hủy</option>
-                    <option value="suspended" {{ request('status') == 'suspended' ? 'selected' : '' }}>Tạm dừng</option>
+                    @foreach(\App\Http\Controllers\Admin\ContractsController::getStatuses() as $value => $label)
+                        <option value="{{ $value }}" {{ request('status') == $value ? 'selected' : '' }}>
+                            {{ $label }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Sắp xếp</label>
-                <select name="sort" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="newest" {{ request('sort', 'newest') == 'newest' ? 'selected' : '' }}>Mới nhất</option>
-                    <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Cũ nhất</option>
-                    <option value="value_asc" {{ request('sort') == 'value_asc' ? 'selected' : '' }}>Giá trị tăng dần</option>
-                    <option value="value_desc" {{ request('sort') == 'value_desc' ? 'selected' : '' }}>Giá trị giảm dần</option>
-                    <option value="due_soon" {{ request('sort') == 'due_soon' ? 'selected' : '' }}>Sắp đến hạn</option>
-                </select>
-            </div>
-            
+
+            <!-- Actions -->
             <div class="flex items-end space-x-2">
                 <button type="submit" 
-                        class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center">
-                    <i class="fas fa-filter mr-2"></i>Áp dụng bộ lọc
+                        class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Lọc
                 </button>
-                <a href="{{ route('admin.contracts.index') }}" 
-                   class="w-full bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center justify-center">
-                    <i class="fas fa-redo mr-2"></i>Đặt lại
-                </a>
+                @if(request()->hasAny(['search', 'project_id', 'status']))
+                    <a href="{{ route('admin.contracts.index') }}" 
+                       class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
+                        <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </a>
+                @endif
             </div>
-        </div>
-    </form>
-</div>
+        </form>
+    </div>
 
-<!-- Thống kê nhanh -->
-<div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-    <div class="bg-blue-50 p-4 rounded-lg">
-        <div class="flex items-center">
-            <div class="p-2 bg-blue-100 rounded-lg mr-3">
-                <i class="fas fa-file-contract text-blue-600"></i>
-            </div>
-            <div>
-                <div class="text-blue-600 font-bold text-xl">{{ $contracts->total() }}</div>
-                <div class="text-gray-600 text-sm">Tổng hợp đồng</div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="bg-green-50 p-4 rounded-lg">
-        <div class="flex items-center">
-            <div class="p-2 bg-green-100 rounded-lg mr-3">
-                <i class="fas fa-check-circle text-green-600"></i>
-            </div>
-            <div>
-                <div class="text-green-600 font-bold text-xl">{{ $activeCount }}</div>
-                <div class="text-gray-600 text-sm">Đang hoạt động</div>
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-xl shadow-md p-4">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <div class="text-lg font-bold text-gray-900">{{ $contracts->total() }}</div>
+                    <div class="text-sm text-gray-600">Tổng hợp đồng</div>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <div class="bg-yellow-50 p-4 rounded-lg">
-        <div class="flex items-center">
-            <div class="p-2 bg-yellow-100 rounded-lg mr-3">
-                <i class="fas fa-clock text-yellow-600"></i>
-            </div>
-            <div>
-                <div class="text-yellow-600 font-bold text-xl">{{ $pendingCount }}</div>
-                <div class="text-gray-600 text-sm">Chờ xử lý</div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="bg-purple-50 p-4 rounded-lg">
-        <div class="flex items-center">
-            <div class="p-2 bg-purple-100 rounded-lg mr-3">
-                <i class="fas fa-money-bill-wave text-purple-600"></i>
-            </div>
-            <div>
-                <div class="text-purple-600 font-bold text-xl">{{ number_format($totalValue) }} đ</div>
-                <div class="text-gray-600 text-sm">Tổng giá trị</div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="bg-red-50 p-4 rounded-lg">
-        <div class="flex items-center">
-            <div class="p-2 bg-red-100 rounded-lg mr-3">
-                <i class="fas fa-calendar-times text-red-600"></i>
-            </div>
-            <div>
-                <div class="text-red-600 font-bold text-xl">{{ $overdueCount }}</div>
-                <div class="text-gray-600 text-sm">Quá hạn</div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Danh sách hợp đồng -->
-<div class="bg-white rounded-lg shadow overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã hợp đồng</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dự án</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nhà thầu</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá trị</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời hạn</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thanh toán</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($contracts as $contract)
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">HĐ-{{ str_pad($contract->id, 6, '0', STR_PAD_LEFT) }}</div>
-                        <div class="text-sm text-gray-500">{{ $contract->signed_date->format('d/m/Y') }}</div>
-                    </td>
-                    
-                    <td class="px-6 py-4">
-                        <div class="text-sm font-medium text-gray-900">{{ $contract->project->project_name ?? 'N/A' }}</div>
-                        <div class="text-xs text-gray-500">ID: {{ $contract->project_id }}</div>
-                    </td>
-                    
-                    <td class="px-6 py-4">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                <i class="fas fa-user text-blue-600 text-xs"></i>
-                            </div>
-                            <div class="ml-3">
-                                <div class="text-sm font-medium text-gray-900">{{ $contract->contractor->name ?? 'N/A' }}</div>
-                                <div class="text-xs text-gray-500">{{ $contract->contractor->email ?? '' }}</div>
-                            </div>
-                        </div>
-                    </td>
-                    
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-bold text-gray-900">{{ number_format($contract->contract_value) }} đ</div>
-                    </td>
-                    
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">{{ $contract->due_date->format('d/m/Y') }}</div>
-                        @php
-                            $daysLeft = now()->diffInDays($contract->due_date, false);
-                        @endphp
-                        <div class="text-xs {{ $daysLeft < 0 ? 'text-red-600' : ($daysLeft < 30 ? 'text-yellow-600' : 'text-green-600') }}">
-                            @if($daysLeft < 0)
-                                Quá hạn {{ abs($daysLeft) }} ngày
-                            @elseif($daysLeft == 0)
-                                Hết hạn hôm nay
-                            @else
-                                Còn {{ $daysLeft }} ngày
-                            @endif
-                        </div>
-                    </td>
-                    
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                            @if($contract->status == 'active') bg-green-100 text-green-800
-                            @elseif($contract->status == 'completed') bg-blue-100 text-blue-800
-                            @elseif($contract->status == 'pending') bg-yellow-100 text-yellow-800
-                            @elseif($contract->status == 'cancelled') bg-red-100 text-red-800
-                            @else bg-gray-100 text-gray-800 @endif">
-                            {{ \App\Http\Controllers\Admin\ContractsController::getStatuses()[$contract->status] ?? $contract->status }}
-                        </span>
-                    </td>
-                    
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        @php
-                            $totalPaid = $contract->payments->sum('amount');
-                            $progress = $contract->contract_value > 0 ? ($totalPaid / $contract->contract_value) * 100 : 0;
-                        @endphp
-                        <div class="flex items-center">
-                            <div class="w-20 bg-gray-200 rounded-full h-2 mr-2">
-                                <div class="bg-blue-600 h-2 rounded-full" style="width: {{ min($progress, 100) }}%"></div>
-                            </div>
-                            <span class="text-sm text-gray-600">{{ round($progress, 1) }}%</span>
-                        </div>
-                        <div class="text-xs text-gray-500 mt-1">
-                            {{ number_format($totalPaid) }}/{{ number_format($contract->contract_value) }} đ
-                        </div>
-                    </td>
-                    
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-2">
-                            <a href="{{ route('admin.contracts.show', $contract) }}" 
-                               class="text-blue-600 hover:text-blue-900" title="Xem chi tiết">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ route('admin.contracts.edit', $contract) }}" 
-                               class="text-green-600 hover:text-green-900" title="Chỉnh sửa">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form action="{{ route('admin.contracts.destroy', $contract) }}" method="POST" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" 
-                                        class="text-red-600 hover:text-red-900" 
-                                        title="Xóa"
-                                        onclick="return confirm('Bạn có chắc chắn muốn xóa hợp đồng này?')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="8" class="px-6 py-8 text-center text-gray-500">
-                        <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-                            <i class="fas fa-file-contract text-2xl text-gray-400"></i>
-                        </div>
-                        <p class="text-lg font-medium text-gray-700 mb-2">Chưa có hợp đồng nào</p>
-                        <p class="text-gray-500 mb-4">Hãy tạo hợp đồng đầu tiên cho dự án của bạn</p>
-                        <a href="{{ route('admin.contracts.create') }}" 
-                           class="inline-flex items-center px-6 py-3 bg-blue-600 border border-transparent rounded-lg font-semibold text-white hover:bg-blue-700 transition-colors">
-                            <i class="fas fa-plus mr-2"></i>Tạo hợp đồng đầu tiên
-                        </a>
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+        <div class="bg-white rounded-xl shadow-md p-4">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <div class="text-lg font-bold text-gray-900">{{ $activeCount }}</div>
+                    <div class="text-sm text-gray-600">Đang hoạt động</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-4">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <div class="text-lg font-bold text-gray-900">{{ $pendingCount }}</div>
+                    <div class="text-sm text-gray-600">Chờ xử lý</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-4">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <div class="text-lg font-bold text-gray-900">{{ number_format($totalValue) }} đ</div>
+                    <div class="text-sm text-gray-600">Tổng giá trị</div>
+                </div>
+            </div>
+        </div>
     </div>
-    
-    <!-- Phân trang -->
-    @if($contracts->hasPages())
-    <div class="bg-white px-6 py-4 border-t border-gray-200">
-        {{ $contracts->withQueryString()->links() }}
+
+    <!-- Contracts Table -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Mã hợp đồng
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Dự án
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Nhà thầu
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Giá trị
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Thời hạn
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Trạng thái
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Thao tác
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($contracts as $contract)
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        <a href="{{ route('admin.contracts.show', $contract) }}" class="hover:text-blue-600">
+                                            HĐ-{{ str_pad($contract->id, 6, '0', STR_PAD_LEFT) }}
+                                        </a>
+                                    </div>
+                                    <div class="text-sm text-gray-500">{{ $contract->signed_date->format('d/m/Y') }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">{{ $contract->project->project_name ?? 'N/A' }}</div>
+                            <div class="text-sm text-gray-500">ID: {{ $contract->project_id }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900">{{ $contract->contractor->name ?? 'N/A' }}</div>
+                            <div class="text-sm text-gray-500">{{ $contract->contractor->email ?? '' }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-sm font-bold text-gray-900">
+                            {{ number_format($contract->contract_value) }} đ
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900">{{ $contract->due_date->format('d/m/Y') }}</div>
+                            @php
+                                $daysLeft = now()->diffInDays($contract->due_date, false);
+                            @endphp
+                            <div class="text-xs {{ $daysLeft < 0 ? 'text-red-600' : ($daysLeft < 30 ? 'text-yellow-600' : 'text-green-600') }}">
+                                @if($daysLeft < 0)
+                                    Quá hạn {{ abs($daysLeft) }} ngày
+                                @elseif($daysLeft == 0)
+                                    Hết hạn hôm nay
+                                @else
+                                    Còn {{ $daysLeft }} ngày
+                                @endif
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                @if($contract->status == 'active') bg-green-100 text-green-800
+                                @elseif($contract->status == 'completed') bg-blue-100 text-blue-800
+                                @elseif($contract->status == 'terminated') bg-yellow-100 text-yellow-800
+                                @elseif($contract->status == 'on_hold') bg-red-100 text-red-800
+                                @else bg-gray-100 text-gray-800 @endif">
+                                {{ \App\Http\Controllers\Admin\ContractsController::getStatuses()[$contract->status] ?? $contract->status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center space-x-3">
+                                <a href="{{ route('admin.contracts.show', $contract) }}" 
+                                   class="text-blue-600 hover:text-blue-900" 
+                                   title="Xem chi tiết">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </a>
+                                <a href="{{ route('admin.contracts.edit', $contract) }}" 
+                                   class="text-green-600 hover:text-green-900" 
+                                   title="Chỉnh sửa">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </a>
+                                <form action="{{ route('admin.contracts.destroy', $contract) }}" 
+                                      method="POST" 
+                                      class="inline"
+                                      onsubmit="return confirm('Bạn có chắc muốn xóa hợp đồng này?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" 
+                                            class="text-red-600 hover:text-red-900" 
+                                            title="Xóa">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center justify-center">
+                                <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <p class="text-gray-500 mb-4">Không có hợp đồng nào</p>
+                                <a href="{{ route('admin.contracts.create') }}" 
+                                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Thêm hợp đồng đầu tiên
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        @if($contracts->hasPages())
+        <div class="bg-white px-6 py-4 border-t border-gray-200">
+            {{ $contracts->withQueryString()->links() }}
+        </div>
+        @endif
     </div>
-    @endif
+
+    <!-- Summary -->
+    <div class="mt-6 text-sm text-gray-500">
+        Hiển thị {{ $contracts->count() }} trên tổng số {{ $contracts->total() }} hợp đồng
+    </div>
 </div>
 @endsection

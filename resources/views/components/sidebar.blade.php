@@ -1,173 +1,201 @@
 @auth
-<aside class="w-64 bg-white shadow-lg min-h-screen border-r border-gray-200">
-    <div class="p-4 border-b border-gray-100">
+<aside class="w-64 bg-white shadow-xl min-h-screen border-r border-slate-200">
+    {{-- <div class="p-5 border-b border-slate-100">
         <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-hard-hat text-blue-600"></i>
+            <div class="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center shadow-sm">
+                <i class="fas fa-hard-hat text-indigo-600 text-lg"></i>
             </div>
-            <div>
-                <h3 class="font-semibold text-gray-900">
+            <div class="flex-1">
+                <h3 class="font-bold text-slate-900 text-sm">
                     {{ auth()->user()->name ?? auth()->user()->username }}
                 </h3>
-                <p class="text-xs text-gray-500 capitalize">
+                <p class="text-xs text-slate-500 font-medium capitalize mt-0.5">
                     @if(auth()->user()->user_type === 'admin')
-                        Quản trị viên
-                    @elseif(auth()->user()->user_type === 'ownor')
-                        Khách hàng
+                        <span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-lg text-[10px] font-bold">Quản trị viên</span>
+                    @elseif(auth()->user()->user_type === 'client')
+                        <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-lg text-[10px] font-bold">Khách hàng</span>
                     @else
-                        {{ auth()->user()->user_type }}
+                        <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded-lg text-[10px] font-bold">{{ auth()->user()->user_type }}</span>
                     @endif
                 </p>
             </div>
         </div>
-    </div>
+    </div> --}}
     
     <nav class="p-4">
         <ul class="space-y-1">
             <!-- Dashboard -->
             <li>
                 <a href="{{ route('home') }}"
-                    class="flex items-center space-x-3 p-3 rounded-lg transition-colors
-                    {{ request()->routeIs('home') ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-l-4 hover:border-blue-400' }}">
-                    <i class="fas fa-tachometer-alt w-5 text-center {{ request()->routeIs('home') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                    <span>Dashboard</span>
+                    class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                    {{ request()->routeIs('home') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                    <div class="w-8 h-8 flex items-center justify-center">
+                        <i class="fas fa-tachometer-alt text-sm {{ request()->routeIs('home') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                    </div>
+                    <span class="text-sm font-semibold">Dashboard</span>
                 </a>
             </li>
             
             <!-- Quản lý dự án -->
             @if(auth()->user()->user_type === 'admin')
-                <li class="mt-6 mb-2">
-                    <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Quản lý dự án</p>
+                <li class="mt-8 mb-3">
+                    <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Quản lý dự án</p>
                 </li>
                 <li>
                     <a href="{{ route('admin.projects.index') }}"
-                        class="flex items-center space-x-3 p-3 rounded-lg transition-colors
-                        {{ request()->routeIs('admin.projects.*') ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-l-4 hover:border-blue-400' }}">
-                        <i class="fas fa-project-diagram w-5 text-center {{ request()->routeIs('admin.projects.*') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                        <span>Dự án</span>
+                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                        {{ request()->routeIs('admin.projects.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-project-diagram text-sm {{ request()->routeIs('admin.projects.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                        </div>
+                        <span class="text-sm font-semibold">Dự án</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('admin.sites.index') }}"
-                        class="flex items-center space-x-3 p-3 rounded-lg transition-colors
-                        {{ request()->routeIs('admin.sites.*') ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-l-4 hover:border-blue-400' }}">
-                        <i class="fas fa-map-marker-alt w-5 text-center {{ request()->routeIs('admin.sites.*') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                        <span>Công trường</span>
+                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                        {{ request()->routeIs('admin.sites.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-map-marker-alt text-sm {{ request()->routeIs('admin.sites.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                        </div>
+                        <span class="text-sm font-semibold">Công trường</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('admin.tasks.index') }}"
-                        class="flex items-center space-x-3 p-3 rounded-lg transition-colors
-                        {{ request()->routeIs('admin.tasks.*') ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-l-4 hover:border-blue-400' }}">
-                        <i class="fas fa-tasks w-5 text-center {{ request()->routeIs('admin.tasks.*') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                        <span>Công việc</span>
+                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                        {{ request()->routeIs('admin.tasks.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-tasks text-sm {{ request()->routeIs('admin.tasks.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                        </div>
+                        <span class="text-sm font-semibold">Công việc</span>
                     </a>
                 </li>
                 
                 <!-- Tiến độ & Vật tư -->
-                <li class="mt-6 mb-2">
-                    <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tiến độ & Vật tư</p>
+                <li class="mt-8 mb-3">
+                    <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Tiến độ & Vật tư</p>
                 </li>
                 <li>
                     <a href="{{ route('admin.progress_updates.index') }}"
-                        class="flex items-center space-x-3 p-3 rounded-lg transition-colors
-                        {{ request()->routeIs('admin.progress_updates.*') ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-l-4 hover:border-blue-400' }}">
-                        <i class="fas fa-chart-line w-5 text-center {{ request()->routeIs('admin.progress_updates.*') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                        <span>Cập nhật tiến độ</span>
+                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                        {{ request()->routeIs('admin.progress_updates.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-chart-line text-sm {{ request()->routeIs('admin.progress_updates.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                        </div>
+                        <span class="text-sm font-semibold">Cập nhật tiến độ</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('admin.materials.index') }}"
-                        class="flex items-center space-x-3 p-3 rounded-lg transition-colors
-                        {{ request()->routeIs('admin.materials.*') ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-l-4 hover:border-blue-400' }}">
-                        <i class="fas fa-boxes w-5 text-center {{ request()->routeIs('admin.materials.*') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                        <span>Vật tư</span>
+                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                        {{ request()->routeIs('admin.materials.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-boxes text-sm {{ request()->routeIs('admin.materials.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                        </div>
+                        <span class="text-sm font-semibold">Vật tư</span>
                     </a>
                 </li>
                 
                 <!-- Hợp đồng & Tài chính -->
-                <li class="mt-6 mb-2">
-                    <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Hợp đồng & Tài chính</p>
+                <li class="mt-8 mb-3">
+                    <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Hợp đồng & Tài chính</p>
                 </li>
                 <li>
                     <a href="{{ route('admin.contracts.index') }}"
-                        class="flex items-center space-x-3 p-3 rounded-lg transition-colors
-                        {{ request()->routeIs('admin.contracts.*') ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-l-4 hover:border-blue-400' }}">
-                        <i class="fas fa-file-contract w-5 text-center {{ request()->routeIs('admin.contracts.*') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                        <span>Hợp đồng</span>
+                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                        {{ request()->routeIs('admin.contracts.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-file-contract text-sm {{ request()->routeIs('admin.contracts.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                        </div>
+                        <span class="text-sm font-semibold">Hợp đồng</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('admin.payments.index') }}"
-                        class="flex items-center space-x-3 p-3 rounded-lg transition-colors
-                        {{ request()->routeIs('admin.payments.*') ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-l-4 hover:border-blue-400' }}">
-                        <i class="fas fa-money-bill-wave w-5 text-center {{ request()->routeIs('admin.payments.*') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                        <span>Thanh toán</span>
+                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                        {{ request()->routeIs('admin.payments.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-money-bill-wave text-sm {{ request()->routeIs('admin.payments.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                        </div>
+                        <span class="text-sm font-semibold">Thanh toán</span>
                     </a>
                 </li>
                 
                 <!-- Quản lý hệ thống -->
-                <li class="mt-6 mb-2">
-                    <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Quản lý hệ thống</p>
+                <li class="mt-8 mb-3">
+                    <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Quản lý hệ thống</p>
                 </li>
                 <li>
                     <a href="{{ route('admin.users.index') }}"
-                        class="flex items-center space-x-3 p-3 rounded-lg transition-colors
-                        {{ request()->routeIs('admin.users.*') ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-l-4 hover:border-blue-400' }}">
-                        <i class="fas fa-users w-5 text-center {{ request()->routeIs('admin.users.*') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                        <span>Người dùng</span>
+                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                        {{ request()->routeIs('admin.users.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-users text-sm {{ request()->routeIs('admin.users.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                        </div>
+                        <span class="text-sm font-semibold">Người dùng</span>
                     </a>
                 </li>
                 
             @elseif(auth()->user()->user_type === 'client')
                 <!-- Menu dành cho Client -->
-                <li class="mt-6 mb-2">
-                    <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Dự án của tôi</p>
+                <li class="mt-8 mb-3">
+                    <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Dự án của tôi</p>
                 </li>
                 <li>
                     <a href="{{ route('client.projects.index') }}"
-                        class="flex items-center space-x-3 p-3 rounded-lg transition-colors
-                        {{ request()->routeIs('client.projects.*') ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-l-4 hover:border-blue-400' }}">
-                        <i class="fas fa-project-diagram w-5 text-center {{ request()->routeIs('client.projects.*') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                        <span>Dự án</span>
+                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                        {{ request()->routeIs('client.projects.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-project-diagram text-sm {{ request()->routeIs('client.projects.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                        </div>
+                        <span class="text-sm font-semibold">Dự án</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('client.progress.index') }}"
-                        class="flex items-center space-x-3 p-3 rounded-lg transition-colors
-                        {{ request()->routeIs('client.progress.*') ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-l-4 hover:border-blue-400' }}">
-                        <i class="fas fa-chart-line w-5 text-center {{ request()->routeIs('client.progress.*') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                        <span>Tiến độ</span>
+                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                        {{ request()->routeIs('client.progress.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-chart-line text-sm {{ request()->routeIs('client.progress.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                        </div>
+                        <span class="text-sm font-semibold">Tiến độ</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('client.contracts.index') }}"
-                        class="flex items-center space-x-3 p-3 rounded-lg transition-colors
-                        {{ request()->routeIs('client.contracts.*') ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-l-4 hover:border-blue-400' }}">
-                        <i class="fas fa-file-contract w-5 text-center {{ request()->routeIs('client.contracts.*') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                        <span>Hợp đồng</span>
+                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                        {{ request()->routeIs('client.contracts.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-file-contract text-sm {{ request()->routeIs('client.contracts.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                        </div>
+                        <span class="text-sm font-semibold">Hợp đồng</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('client.payments.index') }}"
-                        class="flex items-center space-x-3 p-3 rounded-lg transition-colors
-                        {{ request()->routeIs('client.payments.*') ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-l-4 hover:border-blue-400' }}">
-                        <i class="fas fa-money-bill-wave w-5 text-center {{ request()->routeIs('client.payments.*') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                        <span>Thanh toán</span>
+                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                        {{ request()->routeIs('client.payments.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-money-bill-wave text-sm {{ request()->routeIs('client.payments.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                        </div>
+                        <span class="text-sm font-semibold">Thanh toán</span>
                     </a>
                 </li>
             @endif
             
             <!-- Profile & Settings -->
-            <li class="mt-6 mb-2">
-                <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tài khoản</p>
+            <li class="mt-8 mb-3">
+                <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Tài khoản</p>
             </li>
             <li>
                 <a href="{{ route('profile') }}"
-                    class="flex items-center space-x-3 p-3 rounded-lg transition-colors
-                    {{ request()->routeIs('profile') ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-l-4 hover:border-blue-400' }}">
-                    <i class="fas fa-user-circle w-5 text-center {{ request()->routeIs('profile') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                    <span>Thông tin cá nhân</span>
+                    class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                    {{ request()->routeIs('profile') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                    <div class="w-8 h-8 flex items-center justify-center">
+                        <i class="fas fa-user-circle text-sm {{ request()->routeIs('profile') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                    </div>
+                    <span class="text-sm font-semibold">Thông tin cá nhân</span>
                 </a>
             </li>
         </ul>

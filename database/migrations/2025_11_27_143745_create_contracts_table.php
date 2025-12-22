@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('contract_value', 15, 2);
             $table->date('signed_date');
             $table->date('due_date');
-            $table->enum('status', ['pending', 'active', 'completed', 'cancelled', 'suspended'])->default('pending');
+            $table->enum('status', ['active', 'completed', 'terminated', 'on_hold'])->default('active');
             $table->text('description')->nullable();
             $table->text('terms')->nullable();
             $table->timestamps();

@@ -11,20 +11,18 @@ use Illuminate\Support\Facades\DB;
 
 class ContractsController extends Controller
 {
-    const STATUS_PENDING = 'pending';
     const STATUS_ACTIVE = 'active';
     const STATUS_COMPLETED = 'completed';
-    const STATUS_CANCELLED = 'cancelled';
-    const STATUS_SUSPENDED = 'suspended';
+    const STATUS_TERMINATED = 'terminated';
+    const STATUS_CANCELLED = 'on_hold';
 
     public static function getStatuses()
     {
         return [
-            self::STATUS_PENDING => 'Chờ xử lý',
             self::STATUS_ACTIVE => 'Đang hoạt động',
             self::STATUS_COMPLETED => 'Đã hoàn thành',
-            self::STATUS_CANCELLED => 'Đã hủy',
-            self::STATUS_SUSPENDED => 'Tạm dừng'
+            self::STATUS_TERMINATED => 'Chấm dứt',
+            self::STATUS_CANCELLED => 'Tạm ngưng',
         ];
     }
 

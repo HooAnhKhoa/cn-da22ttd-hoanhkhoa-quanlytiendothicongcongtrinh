@@ -1,3 +1,5 @@
+[file name]: show.blade.php
+[file content begin]
 @extends('layouts.app')
 
 @section('title', $project->project_name . ' - Chi tiết dự án')
@@ -226,10 +228,6 @@
             <span class="text-sm font-normal text-gray-500 ml-2">({{ $project->sites->count() }} công trường)</span>
         </h2>
         @if($project->status !== 'cancelled')
-            {{-- <a href="{{ route('admin.sites.create', ['project_id' => $project->id]) }}" 
-                class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-white hover:bg-green-700 transition-colors">
-            <i class="fas fa-plus mr-2"></i>Thêm công trường
-            </a>    --}}
             <a href="{{ route('admin.sites.create', ['project_id' => $project->id]) }}" 
             class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                 <i class="fas fa-plus mr-2"></i>Thêm công trường
@@ -394,12 +392,12 @@
     </div>
 </div>
 
-<!-- Tabs Section cho Milestones, Contracts, Documents -->
+<!-- Tabs Section cho Contracts và Documents -->
 <div class="bg-white rounded-lg shadow mb-8">
     <div class="border-b border-gray-200">
         <nav class="flex -mb-px">
             <button class="tab-button active py-4 px-6 text-sm font-medium border-b-2 border-blue-500 text-blue-600" data-tab="contracts">
-                <i class="fas fa-flag-checkered mr-2"></i>Hợp đồng ({{ $project->contracts->count() }})
+                <i class="fas fa-file-contract mr-2"></i>Hợp đồng ({{ $project->contracts->count() }})
             </button>
             <button class="tab-button py-4 px-6 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="documents">
                 <i class="fas fa-file-alt mr-2"></i>Tài liệu ({{ $project->documents->count() ?? 0 }})
@@ -407,65 +405,9 @@
         </nav>
     </div>
 
-    {{-- <div class="p-6">
-        <!-- Milestones Tab -->
-        <div id="tab-milestones" class="tab-content active">
-            @if($project->milestones->count() > 0)
-                <div class="space-y-4">
-                    @foreach($project->milestones as $milestone)
-                    <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-lg text-gray-800">{{ $milestone->milestone_name }}</h4>
-                                @if($milestone->description)
-                                <p class="text-gray-600 mt-1">{{ $milestone->description }}</p>
-                                @endif
-                                <div class="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                                    <span>Mục tiêu: {{ $milestone->target_date->format('d/m/Y') }}</span>
-                                    @if($milestone->completed_date)
-                                        <span>• Hoàn thành: {{ $milestone->completed_date->format('d/m/Y') }}</span>
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="text-right ml-4">
-                                @php
-                                    $milestoneStatusColors = [
-                                        'completed' => 'bg-green-100 text-green-800',
-                                        'in_progress' => 'bg-blue-100 text-blue-800',
-                                        'on_hold' => 'bg-yellow-100 text-yellow-800',
-                                        'planned' => 'bg-gray-100 text-gray-800',
-                                    ];
-                                @endphp
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $milestoneStatusColors[$milestone->status] ?? 'bg-gray-100 text-gray-800' }}">
-                                    {{ \App\Models\Project::getStatuses()[$milestone->status] ?? $milestone->status }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            @else
-                <div class="text-center py-12">
-                    <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
-                        <i class="fas fa-flag-checkered text-3xl text-gray-400"></i>
-                    </div>
-                    @if($project->status !== 'cancelled')
-                        <h3 class="text-lg font-medium text-gray-700 mb-2">Chưa có mốc quan trọng nào</h3>
-                        <p class="text-gray-500 mb-6">Dự án chưa được thiết lập mốc quan trọng</p>
-                        <a href="{{ route('admin.milestones.create', ['project_id' => $project->id]) }}" 
-                           class="inline-flex items-center px-6 py-3 bg-green-600 border border-transparent rounded-lg font-semibold text-white hover:bg-green-700 transition-colors">
-                            <i class="fas fa-plus mr-2"></i>Tạo mốc quan trọng
-                        </a>                   
-                    @else
-                        <h3 class="text-lg font-medium text-gray-700 mb-2">Dự án đã bị hủy</h3>
-                        <p class="text-gray-500 mb-6">Không thể thêm mốc quan trọng vào dự án đã hủy</p>
-                    @endif
-                </div>
-            @endif
-        </div> --}}
-
+    <div class="p-6">
         <!-- Contracts Tab -->
-        <div id="tab-contracts" class="tab-content hidden">
+        <div id="tab-contracts" class="tab-content active">
             @if($project->contracts->count() > 0)
                 <div class="space-y-4">
                     @foreach($project->contracts as $contract)
@@ -492,7 +434,7 @@
                                     ];
                                 @endphp
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $contractStatusColors[$contract->status] ?? 'bg-gray-100 text-gray-800' }}">
-                                    {{ \App\Models\Contract::getStatuses()[$contract->status] ?? $contract->status }}
+                                    {{ \App\Models\Project::getStatuses()[$contract->status] ?? $contract->status }}
                                 </span>
                             </div>
                         </div>
@@ -537,10 +479,13 @@
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2">
-                                <a href="{{ route('admin.documents.download', $document) }}" 
+                                @if($document->file_path)
+                                {{-- <a href="{{ route('admin.documents.download', $document) }}"  --}}
+                                    <a href="#" 
                                    class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors">
                                     <i class="fas fa-download mr-1"></i>Tải xuống
                                 </a>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -562,7 +507,7 @@
         </div>
     </div>
 </div>
-<br>
+
 <!-- Action Buttons -->
 <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
     <div class="text-sm text-gray-500">
@@ -571,26 +516,25 @@
         • Tổng công trường: {{ $project->sites->count() }}
     </div>
     @if($project->status !== 'cancelled')
-        <div class="flex gap-2">
-                <form action="{{ route('admin.projects.destroy', $project) }}" method="POST" class="inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-white hover:bg-red-700 transition-colors"
-                            onclick="return confirm('Bạn có chắc chắn muốn xóa dự án này?')">
-                        <i class="fas fa-trash mr-2"></i>Xóa dự án
-                    </button>
-                </form>
-                <a href="{{ route('admin.projects.edit', $project) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-white hover:bg-blue-700 transition-colors">
-                    <i class="fas fa-edit mr-2"></i>Chỉnh sửa
-                </a>
-                <a href="#" 
-                class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-white hover:bg-purple-700 transition-colors">
-                    <i class="fas fa-file-pdf mr-2"></i>Xuất báo cáo
-                </a>
-            </div>
-        </div>    
-        <br>
+    <div class="flex gap-2">
+        <form action="{{ route('admin.projects.destroy', $project) }}" method="POST" class="inline">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-white hover:bg-red-700 transition-colors"
+                    onclick="return confirm('Bạn có chắc chắn muốn xóa dự án này?')">
+                <i class="fas fa-trash mr-2"></i>Xóa dự án
+            </button>
+        </form>
+        <a href="{{ route('admin.projects.edit', $project) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-white hover:bg-blue-700 transition-colors">
+            <i class="fas fa-edit mr-2"></i>Chỉnh sửa
+        </a>
+        <a href="#" 
+        class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-white hover:bg-purple-700 transition-colors">
+            <i class="fas fa-file-pdf mr-2"></i>Xuất báo cáo
+        </a>
+    </div>
     @endif
+</div>
 @endsection
 
 @push('scripts')
@@ -662,3 +606,4 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 </style>
 @endpush
+[file content end]

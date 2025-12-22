@@ -97,7 +97,7 @@ class ProgressUpdateController extends Controller
             'progress_percent' => $request->progress_percent,
             'description' => $request->description,
             'attached_files' => !empty($filePaths) ? json_encode($filePaths) : null,
-            'created_by' => Auth::user()->name ?? Auth::user()->email,
+            'created_by' => Auth::id(), // Thay đổi này - sử dụng ID thay vì email
         ]);
 
         // Update task progress

@@ -1,69 +1,75 @@
-<header class="bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-lg">
+<header class="bg-gradient-to-r from-slate-800 to-slate-900 shadow-lg border-b border-slate-700">
     <div class="container mx-auto px-6 py-4">
         <div class="flex justify-between items-center">
             <!-- Phần bên trái: Logo BuildManage -->
             <div class="flex-1">
-                <a href="{{ route('home') }}" class="flex items-center space-x-2 hover:opacity-90 transition-opacity w-fit">
-                    <i class="fas fa-hard-hat text-2xl"></i>
-                    <h1 class="text-2xl font-bold">
-                        Build<span class="text-blue-200">Manage</span>
-                    </h1>
+                <a href="{{ route('home') }}" class="flex items-center space-x-3 hover:opacity-90 transition-opacity w-fit group">
+                    <div class="w-10 h-10 bg-indigo-500 rounded-xl shadow-lg flex items-center justify-center transform group-hover:rotate-6 transition-transform duration-300">
+                        <i class="fas fa-hard-hat text-lg text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-black text-white tracking-tighter">
+                            Build<span class="text-indigo-300">Manage</span>
+                        </h1>
+                        <p class="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Professional Construction</p>
+                    </div>
                 </a>
             </div>
             
             <!-- Phần bên phải: User menu -->
             <div class="flex-1 flex justify-end">
                 @auth
-                    <div class="flex items-center space-x-3">
-                        <span class="text-blue-100 text-sm hidden md:block">Xin chào,</span>
+                    <div class="flex items-center space-x-4">
                         <div class="relative">
                             <button 
                                 id="userMenuButton"
-                                class="flex items-center space-x-2 bg-blue-800/50 hover:bg-blue-800 px-4 py-2 rounded-lg transition-colors border border-blue-500/30"
+                                class="flex items-center space-x-3 bg-slate-700 hover:bg-slate-600 px-4 py-2.5 rounded-xl transition-all duration-300 border border-slate-600 shadow-md hover:shadow-lg group"
                             >
-                                <i class="fas fa-user-circle"></i>
-                                <span class="font-medium">{{ auth()->user()->name ?? auth()->user()->username }}</span>
-                                <i class="fas fa-chevron-down transition-transform duration-200 text-sm" id="chevronIcon"></i>
+                                <div class="w-8 h-8 bg-indigo-500/20 rounded-lg flex items-center justify-center border border-indigo-400/30">
+                                    <i class="fas fa-user-circle text-indigo-300 text-sm"></i>
+                                </div>
+                                <span class="font-bold text-white text-sm">{{ auth()->user()->name ?? auth()->user()->username }}</span>
+                                <i class="fas fa-chevron-down transition-transform duration-300 text-xs text-slate-300 group-hover:text-indigo-300" id="chevronIcon"></i>
                             </button>
                             <div 
                                 id="userDropdown"
-                                class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200 hidden transition-all duration-200"
+                                class="absolute right-0 mt-2 w-60 bg-slate-800 rounded-2xl shadow-xl py-2 z-50 border border-slate-700 hidden transition-all duration-300 origin-top-right"
                             >
-                                <div class="px-4 py-3 border-b border-gray-100 bg-gray-50 rounded-t-lg">
-                                    <p class="text-sm font-semibold text-gray-900">{{ auth()->user()->name ?? auth()->user()->username }}</p>
-                                    <p class="text-xs text-gray-600 capitalize mt-1">
-                                        @if(auth()->user()->role === 'admin')
-                                            <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs">Quản trị viên</span>
-                                        @elseif(auth()->user()->role === 'client')
-                                            <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs">Khách hàng</span>
+                                <div class="px-5 py-4 border-b border-slate-700 bg-slate-900/50 rounded-t-2xl">
+                                    <p class="text-sm font-bold text-white">{{ auth()->user()->name ?? auth()->user()->username }}</p>
+                                    <p class="text-xs text-slate-300 font-medium mt-1 capitalize">
+                                        @if(auth()->user()->user_type === 'admin')
+                                            <span class="bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-indigo-500/30">Quản trị viên</span>
+                                        @elseif(auth()->user()->user_type === 'client')
+                                            <span class="bg-green-500/20 text-green-300 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-green-500/30">Khách hàng</span>
                                         @else
-                                            <span class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs">{{ auth()->user()->role }}</span>
+                                            <span class="bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-600">{{ auth()->user()->user_type }}</span>
                                         @endif
                                     </p>
                                 </div>
                                 <a 
                                     href="{{ route('profile') }}" 
-                                    class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                                    class="flex items-center px-5 py-3 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors group"
                                 >
-                                    <i class="fas fa-user mr-3 w-4 text-center text-gray-500"></i>
-                                    <span class="text-sm font-medium">Thông tin cá nhân</span>
+                                    <i class="fas fa-user mr-3 w-4 text-center text-slate-400 group-hover:text-indigo-300"></i>
+                                    <span class="text-sm font-semibold">Thông tin cá nhân</span>
                                 </a>
                                 <a 
                                     href="{{ route('profile') }}#settings" 
-                                    class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                                    class="flex items-center px-5 py-3 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors group"
                                 >
-                                    <i class="fas fa-cog mr-3 w-4 text-center text-gray-500"></i>
-                                    <span class="text-sm font-medium">Cài đặt</span>
+                                    <i class="fas fa-cog mr-3 w-4 text-center text-slate-400 group-hover:text-indigo-300"></i>
+                                    <span class="text-sm font-semibold">Cài đặt tài khoản</span>
                                 </a>
-                                <div class="border-t border-gray-100 pt-2 mt-2">
+                                <div class="border-t border-slate-700 pt-2 mt-2">
                                     <form action="{{ route('logout') }}" method="POST">
                                         @csrf
                                         <button 
                                             type="submit" 
-                                            class="flex items-center w-full text-left px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors"
+                                            class="flex items-center w-full text-left px-5 py-3 text-red-400 hover:bg-red-900/30 hover:text-red-300 transition-colors group rounded-b-2xl"
                                         >
-                                            <i class="fas fa-sign-out-alt mr-3 w-4 text-center"></i>
-                                            <span class="text-sm font-medium">Đăng xuất</span>
+                                            <i class="fas fa-sign-out-alt mr-3 w-4 text-center group-hover:rotate-180 transition-transform"></i>
+                                            <span class="text-sm font-semibold">Đăng xuất</span>
                                         </button>
                                     </form>
                                 </div>
@@ -71,16 +77,16 @@
                         </div>
                     </div>
                 @else
-                    <div class="flex items-center space-x-3">
+                    <div class="flex items-center space-x-4">
                         <a href="{{ route('login') }}" 
-                           class="bg-blue-800/50 hover:bg-blue-800 px-4 py-2 rounded-lg transition-colors border border-blue-500/30">
+                           class="bg-slate-700 hover:bg-slate-600 px-4 py-2.5 rounded-xl transition-all duration-300 border border-slate-600 shadow-md hover:shadow-lg text-slate-300 hover:text-white font-semibold text-sm">
                             <i class="fas fa-sign-in-alt mr-2"></i>
-                            <span class="font-medium">Đăng nhập</span>
+                            <span>Đăng nhập</span>
                         </a>
                         <a href="{{ route('register') }}" 
-                           class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-colors shadow-md">
+                           class="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 px-4 py-2.5 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl text-white font-bold text-sm">
                             <i class="fas fa-user-plus mr-2"></i>
-                            <span class="font-medium">Đăng ký</span>
+                            <span>Đăng ký</span>
                         </a>
                     </div>
                 @endauth

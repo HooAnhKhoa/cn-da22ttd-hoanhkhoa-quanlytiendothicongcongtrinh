@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
-use App\Models\User;
 use App\Models\Task;
-use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\Issue;
+use App\Models\Payment;
 use App\Models\Project;
+use Illuminate\Http\Request;
 use App\Models\MaterialUsage;
+use App\Models\ProgressUpdate;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
@@ -32,52 +36,62 @@ class HomeController extends Controller
         return view('welcome');
     }
 
+    private function getRecentProgress()
+    {
+        return ProgressUpdate::with(['task.site.project', 'user'])
+            ->select('*') // Lấy tất cả các trường
+            ->latest()
+            ->take(5)
+            ->get();
+    }
+
     /**
-     * Dashboard cho Admin
-     */
+    * Dashboard cho Admin
+    */
     public function adminDashboard()
     {
-        // Thống kê cơ bản
+        // 1. Thống kê cơ bản
         $stats = [
             'total_projects' => Project::count(),
             'total_tasks' => Task::count(),
             'total_users' => User::count(),
-            'total_clients' => User::where('user_type', 'client')->count(),
             'active_projects' => Project::where('status', 'in_progress')->count(),
-            'overdue_tasks' => $this->getOverdueTasksCount(),
-            'in_progress_tasks' => Task::where('status', 'in_progress')->count(),
-            'completed_tasks' => Task::where('status', 'completed')->count(),
-            'pending_tasks' => Task::where('status', 'pending')->count(),
+            'overdue_tasks' => Task::where('end_date', '<', now())
+                                ->whereNotIn('status', ['completed', 'cancelled'])->count(),
         ];
 
-        // Thống kê vật liệu
-        $materialStats = $this->getMaterialStats();
+        // 2. Dữ liệu biểu đồ Thanh toán
+        $paymentChartData = Payment::select(
+            DB::raw('DATE_FORMAT(pay_date, "%m/%Y") as month'),
+            DB::raw('SUM(amount) as total')
+        )
+        ->groupBy('month')
+        ->orderBy('pay_date', 'asc')
+        ->get();
 
-        // Dữ liệu gần đây
-        $recentProjects = Project::with(['owner', 'contractor', 'engineer'])
-            ->latest()
-            ->take(10)
+        // 3. Lấy danh sách gần đây
+        $recentProjects = Project::orderBy('id', 'desc')->take(5)->get();
+        
+        $recentPayments = Payment::with('contract.project')
+            ->orderBy('pay_date', 'desc')
+            ->take(5)
             ->get();
 
-        $recentTasks = Task::with(['site.project'])
-            ->latest()
-            ->take(10)
-            ->get();
+        // 4. Lấy thông tin tiến độ công việc gần đây
+        $recentProgress = $this->getRecentProgress();
 
-        // Thống kê theo trạng thái dự án
-        $projectStatusStats = [
-            'planning' => Project::where('status', 'planning')->count(),
-            'in_progress' => Project::where('status', 'in_progress')->count(),
-            'on_hold' => Project::where('status', 'on_hold')->count(),
-            'completed' => Project::where('status', 'completed')->count(),
-            'cancelled' => Project::where('status', 'cancelled')->count(),
-        ];
+        // 5. Thống kê trạng thái dự án cho biểu đồ
+        $projectStatusStats = Project::select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status')->toArray();
 
+        // QUAN TRỌNG: Truyền đầy đủ các biến vào compact()
         return view('admin.dashboard', compact(
-            'stats', 
-            'materialStats', 
-            'recentProjects', 
-            'recentTasks',
+            'stats',
+            'paymentChartData',
+            'recentProjects',
+            'recentPayments',
+            'recentProgress',
             'projectStatusStats'
         ));
     }
@@ -90,8 +104,9 @@ class HomeController extends Controller
         $userId = Auth::id();
         
         // Thống kê dự án của client
-        $clientProjects = Project::where('client_id', $userId)
-            ->orWhere('owner_id', $userId)
+        $clientProjects = Project::where('owner_id', $userId)
+            ->orWhere('contractor_id', $userId)
+            ->orWhere('engineer_id', $userId)
             ->get();
 
         $stats = [

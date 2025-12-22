@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('progress_percent');
             $table->text('description')->nullable();
             $table->json('attached_files')->nullable();
-            $table->foreignId('created_by')->constrained('users');
+            $table->foreignId('created_by')->constrained('users');  
             $table->timestamps();
 
 

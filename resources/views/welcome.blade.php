@@ -1,245 +1,161 @@
 @extends('layouts.app')
 
 @section('content')
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BuildManage - Quản lý dự án xây dựng</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        
-        .hero-gradient {
-            background: linear-gradient(135deg, #90a8f6 0%, #3479e7 100%);
-        }
-        
-        .stats-gradient {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        }
-        
-        .feature-gradient {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        }
-        
-        .nav-shadow {
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
-        }
-        
-        .card-shadow {
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        }
-    </style>
-</head>
-<body class="bg-gray-50">
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #1e293b;
+    }
 
+    .glass-morphism {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
 
-    <!-- Hero Section -->
-    <section class="hero-gradient text-white">
-        <div class="container mx-auto px-4 py-24 md:py-32">
-            <div class="max-w-4xl mx-auto text-center">
-                <!-- Tiêu đề chính - MÀU TRẮNG TƯƠI SÁNG -->
-                <h1 class="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-                    Quản lý dự án xây dựng
-                    <span class="block text-white font-extrabold mt-2">Chuyên nghiệp & Hiệu quả</span>
+    .text-gradient {
+        background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-bg {
+        background: radial-gradient(circle at top right, #e0e7ff 0%, #ffffff 50%),
+                    radial-gradient(circle at bottom left, #f5f3ff 0%, #ffffff 50%);
+    }
+
+    .card-hover {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    }
+</style>
+
+<div class="hero-bg min-h-screen">
+    <section class="relative pt-20 pb-32 overflow-hidden">
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="text-center max-w-4xl mx-auto">
+                <span class="inline-block py-1 px-4 rounded-full bg-blue-50 text-blue-600 text-sm font-bold mb-6 tracking-wide uppercase">
+                    Platform Xây dựng thế hệ mới 
+                </span>
+                <h1 class="text-5xl md:text-7xl font-extrabold mb-8 leading-[1.1] tracking-tight text-slate-900">
+                    Nâng tầm quản lý <br>
+                    <span class="text-gradient">Công trình của bạn</span>
                 </h1>
-                
-                <!-- Mô tả - MÀU XANH NHẠT CHO DỄ ĐỌC -->
-                <p class="text-xl md:text-2xl text-blue-100 mb-10 max-w-3xl mx-auto font-medium">
-                    Giải pháp toàn diện cho việc quản lý dự án, vật tư, tiến độ và nhân sự trong xây dựng
+                <p class="text-lg md:text-xl text-slate-600 mb-12 max-w-2xl mx-auto leading-relaxed">
+                    Hệ thống quản lý thông minh giúp tối ưu hóa tiến độ, kiểm soát vật tư và kết nối đội ngũ thi công trên một nền tảng duy nhất.
                 </p>
-                
-                <!-- CTA Button - MÀU XANH LÁ NỔI BẬT -->
-                <a href="{{ route('register') }}" 
-                   class="btn-secondary text-white font-bold py-4 px-10 rounded-lg text-lg inline-flex items-center justify-center space-x-2 hover:shadow-xl transition-all transform hover:-translate-y-1">
-                    <i class="fas fa-rocket"></i>
-                    <span>Bắt đầu miễn phí</span>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Stats Section -->
-    <section class="stats-gradient py-16">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                <!-- Stat 1 - MÀU XANH ĐẬM -->
-                <div class="bg-white card-shadow rounded-xl p-8">
-                    <div class="text-4xl font-bold text-blue-700 mb-3">500+</div>
-                    <div class="text-gray-700 font-semibold">Dự án đã quản lý</div>
-                </div>
-                
-                <!-- Stat 2 - MÀU XANH LÁ ĐẬM -->
-                <div class="bg-white card-shadow rounded-xl p-8">
-                    <div class="text-4xl font-bold text-green-600 mb-3">98%</div>
-                    <div class="text-gray-700 font-semibold">Dự án hoàn thành đúng hạn</div>
-                </div>
-                
-                <!-- Stat 3 - MÀU CAM ĐẬM -->
-                <div class="bg-white card-shadow rounded-xl p-8">
-                    <div class="text-4xl font-bold text-orange-600 mb-3">1,200+</div>
-                    <div class="text-gray-700 font-semibold">Người dùng tin tưởng</div>
-                </div>
-                
-                <!-- Stat 4 - MÀU TÍM ĐẬM -->
-                <div class="bg-white card-shadow rounded-xl p-8">
-                    <div class="text-4xl font-bold text-purple-600 mb-3">24/7</div>
-                    <div class="text-gray-700 font-semibold">Hỗ trợ kỹ thuật</div>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="{{ route('register') }}" class="w-full sm:w-auto px-10 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all transform active:scale-95 text-lg">
+                        Bắt đầu ngay miễn phí
+                    </a>
+                    <a href="#features" class="w-full sm:w-auto px-10 py-4 bg-white text-slate-700 font-bold rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all text-lg flex items-center justify-center">
+                        <i class="fas fa-play-circle mr-2 text-blue-600"></i> Xem giới thiệu
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section id="features" class="feature-gradient py-20">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <!-- Tiêu đề section - MÀU ĐEN ĐẬM -->
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Tính năng nổi bật</h2>
-                <p class="text-xl text-gray-700 max-w-2xl mx-auto font-medium">
-                    Công cụ quản lý toàn diện cho mọi khía cạnh của dự án xây dựng
-                </p>
+    <section class="container mx-auto px-6 -mt-20">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="glass-morphism p-8 rounded-[2rem] shadow-sm flex flex-col items-center justify-center card-hover">
+                <div class="text-3xl font-black text-blue-600 mb-1">500+</div>
+                <div class="text-slate-500 font-bold text-xs uppercase tracking-widest">Dự án hoàn tất</div>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Feature 1 - QUẢN LÝ DỰ ÁN -->
-                <div class="bg-white rounded-xl card-shadow p-8 hover:shadow-2xl transition-all">
-                    <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
-                        <i class="fas fa-project-diagram text-blue-700 text-2xl"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Quản lý dự án</h3>
-                    <p class="text-gray-700 mb-6">
-                        Theo dõi tiến độ, phân công công việc, quản lý ngân sách và kiểm soát toàn bộ dự án từ A đến Z.
-                    </p>
-                    <div class="space-y-3">
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <span class="text-gray-800 font-medium">Giao diện trực quan</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <span class="text-gray-800 font-medium">Báo cáo tự động</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <span class="text-gray-800 font-medium">Cảnh báo thông minh</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Feature 2 - QUẢN LÝ VẬT TƯ -->
-                <div class="bg-white rounded-xl card-shadow p-8 hover:shadow-2xl transition-all">
-                    <div class="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mb-6">
-                        <i class="fas fa-truck-loading text-green-700 text-2xl"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Quản lý vật tư</h3>
-                    <p class="text-gray-700 mb-6">
-                        Kiểm soát tồn kho, theo dõi sử dụng vật tư, tối ưu hóa chi phí và tránh lãng phí.
-                    </p>
-                    <div class="space-y-3">
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <span class="text-gray-800 font-medium">Theo dõi tồn kho thời gian thực</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <span class="text-gray-800 font-medium">Cảnh báo vật tư sắp hết</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <span class="text-gray-800 font-medium">Thống kê sử dụng chi tiết</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Feature 3 - QUẢN LÝ TIẾN ĐỘ -->
-                <div class="bg-white rounded-xl card-shadow p-8 hover:shadow-2xl transition-all">
-                    <div class="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-6">
-                        <i class="fas fa-tasks text-purple-700 text-2xl"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Quản lý tiến độ</h3>
-                    <p class="text-gray-700 mb-6">
-                        Cập nhật tiến độ công việc, đánh giá hiệu suất, đảm bảo dự án hoàn thành đúng hạn.
-                    </p>
-                    <div class="space-y-3">
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <span class="text-gray-800 font-medium">Biểu đồ Gantt trực quan</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <span class="text-gray-800 font-medium">Theo dõi % hoàn thành</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <span class="text-gray-800 font-medium">Cảnh báo chậm tiến độ</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="glass-morphism p-8 rounded-[2rem] shadow-sm flex flex-col items-center justify-center card-hover border-b-4 border-b-green-400">
+                <div class="text-3xl font-black text-green-600 mb-1">99.2%</div>
+                <div class="text-slate-500 font-bold text-xs uppercase tracking-widest">Đúng tiến độ</div>
+            </div>
+            <div class="glass-morphism p-8 rounded-[2rem] shadow-sm flex flex-col items-center justify-center card-hover border-b-4 border-b-purple-400">
+                <div class="text-3xl font-black text-purple-600 mb-1">10k+</div>
+                <div class="text-slate-500 font-bold text-xs uppercase tracking-widest">Kỹ sư tin dùng</div>
+            </div>
+            <div class="glass-morphism p-8 rounded-[2rem] shadow-sm flex flex-col items-center justify-center card-hover border-b-4 border-b-orange-400">
+                <div class="text-3xl font-black text-orange-600 mb-1">24/7</div>
+                <div class="text-slate-500 font-bold text-xs uppercase tracking-widest">Hỗ trợ kỹ thuật</div>
             </div>
         </div>
     </section>
 
-    <!-- Temperature Widget -->
-    <section class="py-12 bg-gray-100">
-        <div class="container mx-auto px-4">
-            <div class="bg-white card-shadow rounded-xl p-8 max-w-md mx-auto">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-2xl font-bold text-gray-900">Thời tiết công trường</h3>
-                    <i class="fas fa-sun text-yellow-500 text-3xl"></i>
+    <section id="features" class="py-32 container mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+            <div class="max-w-2xl">
+                <h2 class="text-4xl font-extrabold text-slate-900 mb-4">Giải pháp toàn diện cho <br>mọi quy mô dự án</h2>
+                <p class="text-slate-500 font-medium">Chúng tôi cung cấp mọi công cụ cần thiết để bạn quản lý công trường mà không cần có mặt trực tiếp.</p>
+            </div>
+            <div class="hidden md:block">
+                <i class="fas fa-hard-hat text-8xl text-slate-100"></i>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="p-10 rounded-[2.5rem] bg-blue-50/50 border border-blue-100 card-hover group">
+                <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-8 group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
+                    <i class="fas fa-project-diagram text-xl"></i>
                 </div>
-                <div class="text-center">
-                    <!-- Nhiệt độ lớn, màu đỏ nổi bật -->
-                    <div class="text-6xl font-bold text-red-600 mb-4">30°C</div>
-                    <div class="text-gray-700 mb-6">
-                        <div class="font-semibold text-lg mb-2">Điều kiện làm việc lý tưởng</div>
-                        <p class="text-gray-600">Nắng nhẹ, độ ẩm 65%, gió nhẹ 10km/h</p>
-                    </div>
-                    <!-- Button màu xanh đậm -->
-                    <button class="btn-primary text-white font-semibold py-3 px-6 rounded-lg w-full hover:shadow-lg transition-all">
-                        <i class="fas fa-cloud-sun mr-2"></i>
-                        Cập nhật điều kiện làm việc
-                    </button>
+                <h3 class="text-2xl font-bold mb-4 text-slate-800 tracking-tight">Quản lý Dự án</h3>
+                <p class="text-slate-600 leading-relaxed font-medium">Lập kế hoạch thi công trực quan, phân quyền chặt chẽ giữa Chủ đầu tư - Nhà thầu - Kỹ sư.</p>
+            </div>
+
+            <div class="p-10 rounded-[2.5rem] bg-purple-50/50 border border-purple-100 card-hover group">
+                <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-8 group-hover:bg-purple-600 group-hover:text-white transition-all duration-500">
+                    <i class="fas fa-boxes text-xl"></i>
                 </div>
+                <h3 class="text-2xl font-bold mb-4 text-slate-800 tracking-tight">Kho & Vật tư</h3>
+                <p class="text-slate-600 leading-relaxed font-medium">Kiểm soát xuất nhập kho theo thời gian thực. Cảnh báo tự động khi vật tư sắp hết hoặc lãng phí.</p>
+            </div>
+
+            <div class="p-10 rounded-[2.5rem] bg-orange-50/50 border border-orange-100 card-hover group">
+                <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-8 group-hover:bg-orange-600 group-hover:text-white transition-all duration-500">
+                    <i class="fas fa-chart-line text-xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-slate-800 tracking-tight">Báo cáo Tiến độ</h3>
+                <p class="text-slate-600 leading-relaxed font-medium">Theo dõi biểu đồ tiến độ thực tế so với kế hoạch. Cập nhật hình ảnh từ công trường mỗi ngày.</p>
             </div>
         </div>
     </section>
 
-    <script>
-        // Smooth scroll cho các link
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href');
-                if (targetId === '#') return;
-                
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 100,
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+    <section class="pb-32 container mx-auto px-6">
+        <div class="bg-slate-900 rounded-[3rem] p-12 relative overflow-hidden shadow-2xl">
+            <div class="absolute top-0 right-0 p-12 opacity-10">
+                <i class="fas fa-cloud-sun-rain text-[15rem] text-white"></i>
+            </div>
+            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
+                <div class="text-center md:text-left">
+                    <h3 class="text-white text-3xl font-bold mb-4">Tình trạng công trường</h3>
+                    <p class="text-slate-400 font-medium mb-8 max-w-md">Theo dõi điều kiện thời tiết thực tế để điều chỉnh kế hoạch thi công phù hợp, đảm bảo an toàn lao động.</p>
+                    <div class="inline-flex items-center gap-6 px-8 py-4 bg-white/10 rounded-3xl backdrop-blur-md border border-white/10">
+                        <div class="text-5xl font-black text-orange-400">30°C</div>
+                        <div class="h-10 w-px bg-white/20"></div>
+                        <div class="text-left">
+                            <div class="text-white font-bold uppercase text-xs tracking-widest">Thời tiết hiện tại</div>
+                            <div class="text-slate-300 font-medium italic">Nắng đẹp - Thích hợp đổ bê tông</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="px-8 py-5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl shadow-xl transition-all active:scale-95 flex items-center gap-3">
+                    <i class="fas fa-sync-alt"></i> Cập nhật ngay
+                </button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<footer class="bg-white py-12 border-t border-slate-100">
+    <div class="container mx-auto px-6 text-center">
+        <div class="flex items-center justify-center mb-8">
+            <div class="bg-blue-600 p-2 rounded-lg mr-3">
+                <i class="fas fa-hard-hat text-white"></i>
+            </div>
+            <span class="text-xl font-black text-slate-900 tracking-tight italic">BuildManage</span>
+        </div>
+        <p class="text-slate-400 font-medium">&copy; 2025 Construction Management System. All rights reserved.</p>
+    </div>
+</footer>
 @endsection
