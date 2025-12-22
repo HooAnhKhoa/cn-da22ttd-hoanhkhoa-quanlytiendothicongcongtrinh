@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Models\Admin\Task;
+use App\Models\Task;
 use App\Models\ProgressUpdate;
 use App\Observers\TaskObserver;
 use App\Observers\ProgressUpdateObserver;

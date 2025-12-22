@@ -1,8 +1,9 @@
 <header class="bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-lg">
     <div class="container mx-auto px-6 py-4">
         <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-                <a href="{{ route('home') }}" class="flex items-center space-x-2 hover:opacity-90 transition-opacity">
+            <!-- Phần bên trái: Logo BuildManage -->
+            <div class="flex-1">
+                <a href="{{ route('home') }}" class="flex items-center space-x-2 hover:opacity-90 transition-opacity w-fit">
                     <i class="fas fa-hard-hat text-2xl"></i>
                     <h1 class="text-2xl font-bold">
                         Build<span class="text-blue-200">Manage</span>
@@ -10,7 +11,8 @@
                 </a>
             </div>
             
-            <div class="flex items-center space-x-4">
+            <!-- Phần bên phải: User menu -->
+            <div class="flex-1 flex justify-end">
                 @auth
                     <div class="flex items-center space-x-3">
                         <span class="text-blue-100 text-sm hidden md:block">Xin chào,</span>

@@ -8,7 +8,7 @@
     <nav class="flex mb-6" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
             <li class="inline-flex items-center">
-                <a href="{{ route('materials.index') }}" class="inline-flex items-center text-sm text-gray-700 hover:text-blue-600">
+                <a href="{{ route('admin.materials.index') }}" class="inline-flex items-center text-sm text-gray-700 hover:text-blue-600">
                     <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                     </svg>
@@ -20,7 +20,7 @@
                     <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                     </svg>
-                    <a href="{{ route('materials.show', $material) }}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">
+                    <a href="{{ route('admin.materials.show', $material) }}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">
                         {{ Str::limit($material->materials_name, 30) }}
                     </a>
                 </div>
@@ -45,7 +45,7 @@
                     <h1 class="text-3xl font-bold text-gray-900">Chỉnh sửa Vật tư</h1>
                     <p class="text-gray-600 mt-2">{{ $material->materials_name }}</p>
                 </div>
-                <a href="{{ route('materials.show', $material) }}" 
+                <a href="{{ route('admin.materials.show', $material) }}" 
                    class="inline-flex items-center px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -56,7 +56,7 @@
 
             <!-- Form -->
             <div class="bg-white rounded-xl shadow-md p-6">
-                <form action="{{ route('materials.update', $material) }}" method="POST">
+                <form action="{{ route('admin.materials.update', $material) }}" method="POST">
                     @csrf
                     @method('PUT')
 
@@ -147,7 +147,7 @@
                             Xóa vật tư
                         </button>
                         <div class="flex space-x-3">
-                            <a href="{{ route('materials.show', $material) }}" 
+                            <a href="{{ route('admin.materials.show', $material) }}" 
                                class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
                                 Hủy
                             </a>
@@ -164,7 +164,7 @@
 
                 <!-- Delete Form (hidden) -->
                 <form id="delete-form" 
-                      action="{{ route('materials.destroy', $material) }}" 
+                      action="{{ route('admin.materials.destroy', $material) }}" 
                       method="POST" 
                       class="hidden">
                     @csrf
@@ -203,7 +203,7 @@
                 </div>
             </div>
 
-            <!-- Recent Usage -->
+            {{-- <!-- Recent Usage -->
             @if($material->tasks()->count() > 0)
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -214,7 +214,7 @@
                     </h3>
                     <div class="space-y-3">
                         @foreach($material->tasks()->latest()->take(3)->get() as $task)
-                            <a href="{{ route('tasks.show', $task) }}" 
+                            <a href="{{ route('admin.tasks.show', $task) }}" 
                                class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                                 <div class="flex justify-between items-start">
                                     <div>
@@ -230,14 +230,14 @@
                             </a>
                         @endforeach
                         @if($material->tasks()->count() > 3)
-                            <a href="{{ route('materials.show', $material) }}" 
+                            <a href="{{ route('admin.materials.show', $material) }}" 
                                class="text-center block text-sm text-blue-600 hover:text-blue-800 pt-2">
                                 Xem tất cả {{ $material->tasks()->count() }} bản ghi
                             </a>
                         @endif
                     </div>
                 </div>
-            @endif
+            @endif --}}
         </div>
     </div>
 </div>

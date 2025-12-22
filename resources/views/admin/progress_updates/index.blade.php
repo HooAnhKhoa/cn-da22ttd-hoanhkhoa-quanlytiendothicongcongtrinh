@@ -25,7 +25,7 @@
                 <select name="task_id" id="task_id"
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">Tất cả công việc</option>
-                    @foreach(App\Models\Admin\Task::all() as $task)
+                    @foreach(App\Models\Task::all() as $task)
                         <option value="{{ $task->id }}" {{ request('task_id') == $task->id ? 'selected' : '' }}>
                             {{ $task->task_name }}
                         </option>

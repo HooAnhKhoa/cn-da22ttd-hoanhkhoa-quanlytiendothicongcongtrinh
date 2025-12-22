@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\ProgressUpdate;
-use App\Models\Admin\Task;
+use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -118,7 +119,7 @@ class ProgressUpdateController extends Controller
         $progressUpdate = ProgressUpdate::with(['task', 'creator'])
             ->findOrFail($id);
         
-        return view('progress_updates.show', compact('progressUpdate'));
+        return view('admin.progress_updates.show', compact('progressUpdate'));
     }
 
     /**

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Admin\Task;
-use App\Models\Admin\Site;
+use App\Models\Task;
+use App\Models\Site;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 

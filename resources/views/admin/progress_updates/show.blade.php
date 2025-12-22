@@ -7,7 +7,7 @@
     <div class="max-w-4xl mx-auto">
         <div class="mb-6">
             <nav class="mb-4">
-                <a href="{{ route('tasks.show', $progressUpdate->task_id) }}" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 transition-colors">
+                <a href="{{ route('admin.tasks.show', $progressUpdate->task_id) }}" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 transition-colors">
                     <i class="fas fa-arrow-left mr-2"></i>Quay lại công việc
                 </a>
             </nav>
@@ -24,18 +24,18 @@
                             <i class="fas fa-chart-line mr-2"></i>Báo cáo tiến độ
                         </h2>
                         <p class="text-gray-600 text-sm mt-1">
-                            Công việc: <a href="{{ route('tasks.show', $progressUpdate->task_id) }}" 
+                            Công việc: <a href="{{ route('admin.tasks.show', $progressUpdate->task_id) }}" 
                                          class="font-medium text-blue-600 hover:text-blue-800">
                                 {{ $progressUpdate->task->task_name ?? 'N/A' }}
                             </a>
                         </p>
                     </div>
                     <div class="flex gap-2">
-                        <a href="{{ route('progress_updates.edit', $progressUpdate->id) }}"
+                        <a href="{{ route('admin.progress_updates.edit', $progressUpdate->id) }}"
                            class="inline-flex items-center px-4 py-2 bg-yellow-600 border border-transparent rounded-md font-medium text-white hover:bg-yellow-700 transition-colors">
                             <i class="fas fa-edit mr-2"></i>Sửa
                         </a>
-                        <form action="{{ route('progress_updates.destroy', $progressUpdate->id) }}" method="POST" class="inline">
+                        <form action="{{ route('admin.progress_updates.destroy', $progressUpdate->id) }}" method="POST" class="inline">
                             @csrf
                             @method('DELETE')
                             <button type="submit" onclick="return confirm('Xóa báo cáo này?')"
@@ -166,7 +166,7 @@
                                         <i class="fas fa-eye mr-1"></i> Xem
                                     </a>
                                     @endif
-                                    <a href="{{ route('progress_updates.download', ['id' => $progressUpdate->id, 'filename' => $file]) }}"
+                                    <a href="{{ route('admin.progress_updates.download', ['id' => $progressUpdate->id, 'filename' => $file]) }}"
                                        class="inline-flex items-center px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors">
                                         <i class="fas fa-download mr-1"></i> Tải
                                     </a>

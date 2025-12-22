@@ -13,22 +13,15 @@ return new class extends Migration
     {
         Schema::create('contracts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->constrained('projects');
-            $table->foreignId('contractor_id')->constrained('users');
+            $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
+            $table->foreignId('contractor_id')->constrained('users')->onDelete('cascade');
             $table->decimal('contract_value', 15, 2);
             $table->date('signed_date');
             $table->date('due_date');
-            $table->enum('status', ['active', 'completed', 'terminated'])->default('active');
-
-// contracts
-// - id
-// - project_id
-// - contractor_id (FK)
-// - contract_value
-// - signed_date
-// - due_date
-// - status
-
+            $table->enum('status', ['pending', 'active', 'completed', 'cancelled', 'suspended'])->default('pending');
+            $table->text('description')->nullable();
+            $table->text('terms')->nullable();
+            $table->timestamps();
         });
     }
 

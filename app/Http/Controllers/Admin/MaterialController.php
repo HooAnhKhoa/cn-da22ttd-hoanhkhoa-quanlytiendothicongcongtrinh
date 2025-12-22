@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use App\Models\Material;
@@ -46,7 +47,7 @@ class MaterialController extends Controller
         $types = Material::getTypes();
         $units = Material::getUnits();
         
-        return view('materials.create', compact('types', 'units'));
+        return view('admin.materials.create', compact('types', 'units'));
     }
 
     // Lưu vật tư mới
@@ -61,7 +62,7 @@ class MaterialController extends Controller
 
         Material::create($validated);
 
-        return redirect()->route('materials.index')
+        return redirect()->route('admin.materials.index')
             ->with('success', 'Vật tư đã được tạo thành công!');
     }
 
@@ -73,7 +74,7 @@ class MaterialController extends Controller
             ->orderBy('usage_date', 'desc')
             ->paginate(10);
 
-        return view('materials.show', compact('material', 'usageHistory'));
+        return view('admin.materials.show', compact('material', 'usageHistory'));
     }
 
 
@@ -83,7 +84,7 @@ class MaterialController extends Controller
         $types = Material::getTypes();
         $units = Material::getUnits();
         
-        return view('materials.edit', compact('material', 'types', 'units'));
+        return view('admin.materials.edit', compact('material', 'types', 'units'));
     }
 
     // Cập nhật vật tư
@@ -98,7 +99,7 @@ class MaterialController extends Controller
 
         $material->update($validated);
 
-        return redirect()->route('materials.show', $material)
+        return redirect()->route('admin.materials.show', $material)
             ->with('success', 'Vật tư đã được cập nhật thành công!');
     }
 
@@ -107,7 +108,7 @@ class MaterialController extends Controller
     {
         $material->delete();
         
-        return redirect()->route('materials.index')
+        return redirect()->route('admin.materials.index')
             ->with('success', 'Vật tư đã được xóa thành công!');
     }
 

@@ -437,7 +437,7 @@
                                     ];
                                 @endphp
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $milestoneStatusColors[$milestone->status] ?? 'bg-gray-100 text-gray-800' }}">
-                                    {{ \App\Models\Admin\Project::getStatuses()[$milestone->status] ?? $milestone->status }}
+                                    {{ \App\Models\Project::getStatuses()[$milestone->status] ?? $milestone->status }}
                                 </span>
                             </div>
                         </div>

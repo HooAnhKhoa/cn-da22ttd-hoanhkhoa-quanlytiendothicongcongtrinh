@@ -69,7 +69,7 @@
                 <div class="flex justify-between">
                     <span class="text-gray-600">Trạng thái:</span>
                     <span class="font-medium text-gray-800">
-                        {{ \App\Models\Admin\Project::getStatuses()[$task->status] ?? $task->status }}
+                        {{ \App\Models\Project::getStatuses()[$task->status] ?? $task->status }}
                     </span>
                 </div>
                 <div>

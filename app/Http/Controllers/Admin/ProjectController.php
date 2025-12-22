@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Models\Admin\Project;
+use App\Models\Project;
 use App\Http\Controllers\Controller;    
 
 class ProjectController extends Controller

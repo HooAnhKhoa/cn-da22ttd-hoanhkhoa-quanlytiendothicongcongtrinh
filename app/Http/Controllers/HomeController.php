@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\User;
-use App\Models\admin\Task;
+use App\Models\Task;
 use Illuminate\Http\Request;
-use App\Models\admin\Project;
-use App\Models\admin\MaterialUsage;
+use App\Models\Project;
+use App\Models\MaterialUsage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
@@ -153,102 +154,103 @@ class HomeController extends Controller
      */
     private function getMaterialStats()
     {
-        $stats = [
-            'total_quantity' => 0,
-            'by_type' => [],
-            'top_materials' => [],
-            'by_project' => [],
-        ];
+        // Cache dữ liệu trong 10 phút (600 giây)
+        return Cache::remember('admin_material_stats', 600, function () {
+            $stats = [
+                'total_quantity' => 0,
+                'by_type' => [],
+                'top_materials' => [],
+                'by_project' => [],
+                'monthly_usage' => [],
+                'recent_usage' => [],
+            ];
 
-        try {
-            // Tính tổng vật liệu đã sử dụng
-            $totalQuantity = MaterialUsage::sum('quantity');
-            $stats['total_quantity'] = $totalQuantity;
+            try {
+                // 1. Tính tổng vật liệu đã sử dụng
+                $stats['total_quantity'] = MaterialUsage::sum('quantity');
 
-            // Phân bố theo loại
-            $typeStats = MaterialUsage::selectRaw('materials.type, SUM(material_usages.quantity) as total_quantity')
-                ->join('materials', 'material_usages.material_id', '=', 'materials.id')
-                ->groupBy('materials.type')
-                ->get();
+                // 2. Phân bố theo loại
+                $typeStats = MaterialUsage::selectRaw('materials.type, SUM(material_usages.quantity) as total_quantity')
+                    ->join('materials', 'material_usages.material_id', '=', 'materials.id')
+                    ->groupBy('materials.type')
+                    ->get();
 
-            foreach ($typeStats as $typeStat) {
-                $stats['by_type'][$typeStat->type] = (float) $typeStat->total_quantity;
-            }
-
-            // Top 5 vật liệu sử dụng nhiều nhất
-            $stats['top_materials'] = MaterialUsage::selectRaw('
-                    materials.id,
-                    materials.materials_name,
-                    materials.type,
-                    materials.supplier,
-                    materials.unit,
-                    SUM(material_usages.quantity) as total_quantity,
-                    COUNT(material_usages.id) as usage_count
-                ')
-                ->join('materials', 'material_usages.material_id', '=', 'materials.id')
-                ->groupBy('materials.id', 'materials.materials_name', 'materials.type', 'materials.supplier', 'materials.unit')
-                ->orderByDesc('total_quantity')
-                ->limit(5)
-                ->get();
-
-            // Phân bố theo dự án
-            $projectStats = MaterialUsage::selectRaw('
-                    projects.project_name,
-                    SUM(material_usages.quantity) as total_quantity
-                ')
-                ->join('tasks', 'material_usages.task_id', '=', 'tasks.id')
-                ->leftJoin('sites', 'tasks.site_id', '=', 'sites.id')
-                ->leftJoin('projects', 'sites.project_id', '=', 'projects.id')
-                ->whereNotNull('projects.id')
-                ->groupBy('projects.id', 'projects.project_name')
-                ->orderByDesc('total_quantity')
-                ->get();
-
-            foreach ($projectStats as $projectStat) {
-                if ($projectStat->project_name) {
-                    $stats['by_project'][$projectStat->project_name] = (float) $projectStat->total_quantity;
+                foreach ($typeStats as $typeStat) {
+                    $stats['by_type'][$typeStat->type] = (float) $typeStat->total_quantity;
                 }
+
+                // 3. Top 5 vật liệu sử dụng nhiều nhất
+                $stats['top_materials'] = MaterialUsage::selectRaw('
+                        materials.id,
+                        materials.materials_name,
+                        materials.type,
+                        materials.supplier,
+                        materials.unit,
+                        SUM(material_usages.quantity) as total_quantity,
+                        COUNT(material_usages.id) as usage_count
+                    ')
+                    ->join('materials', 'material_usages.material_id', '=', 'materials.id')
+                    ->groupBy('materials.id', 'materials.materials_name', 'materials.type', 'materials.supplier', 'materials.unit')
+                    ->orderByDesc('total_quantity')
+                    ->limit(5)
+                    ->get();
+
+                // 4. Phân bố theo dự án
+                $projectStats = MaterialUsage::selectRaw('
+                        projects.project_name,
+                        SUM(material_usages.quantity) as total_quantity
+                    ')
+                    ->join('tasks', 'material_usages.task_id', '=', 'tasks.id')
+                    ->leftJoin('sites', 'tasks.site_id', '=', 'sites.id')
+                    ->leftJoin('projects', 'sites.project_id', '=', 'projects.id')
+                    ->whereNotNull('projects.id')
+                    ->groupBy('projects.id', 'projects.project_name')
+                    ->orderByDesc('total_quantity')
+                    ->get();
+
+                foreach ($projectStats as $projectStat) {
+                    if ($projectStat->project_name) {
+                        $stats['by_project'][$projectStat->project_name] = (float) $projectStat->total_quantity;
+                    }
+                }
+
+                // 5. Thống kê vật liệu theo tháng (6 tháng gần đây)
+                $monthlyStats = MaterialUsage::selectRaw('
+                        DATE_FORMAT(material_usages.usage_date, "%Y-%m") as month,
+                        SUM(material_usages.quantity) as total_quantity
+                    ')
+                    ->where('material_usages.usage_date', '>=', Carbon::now()->subMonths(6))
+                    ->groupBy('month')
+                    ->orderBy('month')
+                    ->get();
+
+                foreach ($monthlyStats as $monthlyStat) {
+                    $stats['monthly_usage'][$monthlyStat->month] = (float) $monthlyStat->total_quantity;
+                }
+
+                // 6. Thống kê vật liệu gần đây (7 ngày)
+                $stats['recent_usage'] = MaterialUsage::selectRaw('
+                        materials.materials_name,
+                        materials.type,
+                        material_usages.quantity,
+                        material_usages.usage_date,
+                        tasks.task_name,
+                        users.username as used_by
+                    ')
+                    ->join('materials', 'material_usages.material_id', '=', 'materials.id')
+                    ->join('tasks', 'material_usages.task_id', '=', 'tasks.id')
+                    ->leftJoin('users', 'material_usages.user_id', '=', 'users.id')
+                    ->where('material_usages.usage_date', '>=', Carbon::now()->subDays(7))
+                    ->orderBy('material_usages.usage_date', 'desc')
+                    ->limit(10)
+                    ->get();
+
+            } catch (\Exception $e) {
+                \Log::error('Error getting material stats with cache: ' . $e->getMessage());
             }
 
-            // Thống kê vật liệu theo tháng
-            $monthlyStats = MaterialUsage::selectRaw('
-                    DATE_FORMAT(material_usages.usage_date, "%Y-%m") as month,
-                    SUM(material_usages.quantity) as total_quantity
-                ')
-                ->where('material_usages.usage_date', '>=', Carbon::now()->subMonths(6))
-                ->groupBy('month')
-                ->orderBy('month')
-                ->get();
-
-            $stats['monthly_usage'] = [];
-            foreach ($monthlyStats as $monthlyStat) {
-                $stats['monthly_usage'][$monthlyStat->month] = (float) $monthlyStat->total_quantity;
-            }
-
-            // Thống kê vật liệu gần đây (7 ngày)
-            $recentMaterialUsage = MaterialUsage::selectRaw('
-                    materials.materials_name,
-                    materials.type,
-                    material_usages.quantity,
-                    material_usages.usage_date,
-                    tasks.task_name,
-                    users.username as used_by
-                ')
-                ->join('materials', 'material_usages.material_id', '=', 'materials.id')
-                ->join('tasks', 'material_usages.task_id', '=', 'tasks.id')
-                ->leftJoin('users', 'material_usages.user_id', '=', 'users.id')
-                ->where('material_usages.usage_date', '>=', Carbon::now()->subDays(7))
-                ->orderBy('material_usages.usage_date', 'desc')
-                ->limit(10)
-                ->get();
-
-            $stats['recent_usage'] = $recentMaterialUsage;
-
-        } catch (\Exception $e) {
-            \Log::error('Error getting material stats: ' . $e->getMessage());
-        }
-
-        return $stats;
+            return $stats;
+        });
     }
 
     /**

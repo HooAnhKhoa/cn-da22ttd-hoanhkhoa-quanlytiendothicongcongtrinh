@@ -8,7 +8,7 @@
     <nav class="flex mb-6" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
             <li class="inline-flex items-center">
-                <a href="{{ route('materials.index') }}" class="inline-flex items-center text-sm text-gray-700 hover:text-blue-600">
+                <a href="{{ route('admin.materials.index') }}" class="inline-flex items-center text-sm text-gray-700 hover:text-blue-600">
                     <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                     </svg>
@@ -32,7 +32,7 @@
             <h1 class="text-3xl font-bold text-gray-900">Thêm Vật tư Mới</h1>
             <p class="text-gray-600 mt-2">Thêm vật tư mới vào hệ thống</p>
         </div>
-        <a href="{{ route('materials.index') }}" 
+        <a href="{{ route('admin.materials.index') }}" 
            class="inline-flex items-center px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -44,7 +44,7 @@
     <!-- Form -->
     <div class="max-w-2xl">
         <div class="bg-white rounded-xl shadow-md p-6">
-            <form action="{{ route('materials.store') }}" method="POST">
+            <form action="{{ route('admin.materials.store') }}" method="POST">
                 @csrf
 
                 <!-- Material Name -->
@@ -129,7 +129,7 @@
 
                 <!-- Buttons -->
                 <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                    <a href="{{ route('materials.index') }}" 
+                    <a href="{{ route('admin.materials.index') }}" 
                        class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
                         Hủy bỏ
                     </a>

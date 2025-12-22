@@ -88,7 +88,7 @@
                                     @elseif($project->status == 'completed') bg-blue-100 text-blue-800
                                     @elseif($project->status == 'on_hold') bg-yellow-100 text-yellow-800
                                     @else bg-gray-100 text-gray-800 @endif">
-                                    {{ \App\Models\admin\Project::getStatuses()[$project->status] ?? $project->status }}
+                                    {{ \App\Models\Project::getStatuses()[$project->status] ?? $project->status }}
                                 </span>
                                 <span class="text-xs text-gray-500">
                                     {{ $project->created_at->format('d/m/Y') }}
@@ -137,7 +137,7 @@
                                 @if($task->status == 'completed') bg-green-100 text-green-800
                                 @elseif($task->status == 'in_progress') bg-blue-100 text-blue-800
                                 @else bg-gray-100 text-gray-800 @endif">
-                                {{ \App\Models\admin\Project::getStatuses()[$task->status] ?? $task->status }}
+                                {{ \App\Models\Project::getStatuses()[$task->status] ?? $task->status }}
                             </span>
                         </div>
                         <p class="text-sm text-gray-600 mb-2">Dự án: {{ $task->site->project->project_name }}</p>

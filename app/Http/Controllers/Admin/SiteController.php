@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Admin\Site;
-use App\Models\Admin\Project;
-use App\Models\Admin\Task;
-use App\Models\Admin\MaterialUsage;
+use App\Models\Site;
+use App\Models\Project;
+use App\Models\Task;
+use App\Models\MaterialUsage;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

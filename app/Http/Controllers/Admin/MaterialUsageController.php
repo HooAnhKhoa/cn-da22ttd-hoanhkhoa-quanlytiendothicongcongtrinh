@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Material;
-use App\Models\Admin\Task;
+use App\Models\Task;
 use Illuminate\Http\Request;
 use App\Models\MaterialUsage;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Admin;
+namespace App\Models;
 
 use App\Models\ProgressUpdate;
 use App\Models\MaterialUsage;
