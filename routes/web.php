@@ -15,8 +15,8 @@ use App\Http\Controllers\Admin\ContractsController as AdminContractsController;
 use App\Http\Controllers\Admin\IssueController as AdminIssueController;
 use App\Http\Controllers\Admin\PaymentsController as AdminPaymentsController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Admin\DocumentController as AdminDocumentController;  // Thêm dòng này để import DocumentController
-
+use App\Http\Controllers\Admin\DocumentController as AdminDocumentController; 
+use App\Http\Controllers\Admin\ContractsapproveController as AdminContractsapproveController; 
 
 // ... (Import các Admin controller khác)
 
@@ -69,8 +69,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('issues', AdminIssueController::class);
     Route::resource('payments', AdminPaymentsController::class);
     Route::resource('users', AdminUserController::class);
-    Route::resource('documents', AdminDocumentController::class);  // Thêm dòng này để đăng ký route cho DocumentController
-    
+    Route::resource('documents', AdminDocumentController::class);
+    Route::patch('contracts/{contract}/approve', [\App\Http\Controllers\Admin\ContractController::class, 'approve'])
+         ->name('contracts_approve'); // Tên này phải khớp với tên bạn gọi ở View
+    Route::resource('contracts_approve', AdminContractsapproveController::class);
+
     // Quản lý nguồn lực
     Route::resource('materials', AdminMaterialController::class);
     Route::resource('material_usage', AdminMaterialUsageController::class);

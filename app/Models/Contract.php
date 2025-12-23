@@ -35,12 +35,20 @@ class Contract extends Model
         'signed_date' => 'date',
         'due_date' => 'date',
         'contract_value' => 'decimal:2',
+        'advance_payment' => 'decimal:2',
+        'total_paid' => 'decimal:2',
+        'remaining_amount' => 'decimal:2',
         'additional_files' => 'array'
     ];
 
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'owner_id');
     }
 
     public function contractor()
@@ -51,5 +59,10 @@ class Contract extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function approvals()
+    {
+        return $this->hasMany(ContractApproval::class);
     }
 }

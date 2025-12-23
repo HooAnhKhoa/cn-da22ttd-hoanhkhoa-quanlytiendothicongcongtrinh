@@ -48,7 +48,8 @@
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         onchange="this.form.submit()">
                     <option value="">Tất cả trạng thái</option>
-                    <option value="planned" {{ request('status') == 'planned' ? 'selected' : '' }}>Đã lên kế hoạch</option>
+                    <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Bản nháp</option>
+                    <option value="pending_contract" {{ request('status') == 'pending_contract' ? 'selected' : '' }}>Đợi hợp đồng</option>
                     <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>Đang thi công</option>
                     <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Hoàn thành</option>
                     <option value="on_hold" {{ request('status') == 'on_hold' ? 'selected' : '' }}>Tạm dừng</option>
@@ -197,7 +198,23 @@
                                             {{ $project->project_name }}
                                         </a>
                                     </div>
-                                    <div class="text-sm text-gray-500">Ngân sách: {{ number_format($project->total_budget) }} đ</div>
+                                    <!-- <div class="flex justify-between">
+                                        <span class="text-gray-600">Ngân sách (tổng hợp đồng):</span>
+                                        <span class="font-medium text-green-600">
+                                            {{ number_format($project->total_budget) }} VNĐ
+                                            <span class="text-sm text-gray-500 ml-2">
+                                                ({{ $project->contracts->count() }} hợp đồng)
+                                            </span>
+                                        </span>
+                                    </div> -->
+                                    <div class="text-sm text-gray-500">
+                                        Ngân sách: 
+                                        @if($project->contracts_sum_contract_value > 0)
+                                            {{ number_format($project->contracts_sum_contract_value) }} VNĐ
+                                        @else
+                                            <span class="text-gray-400">Chưa có hợp đồng</span>
+                                        @endif
+                                    </div>                                
                                 </div>
                             </div>
                         </td>
@@ -213,12 +230,19 @@
                         </td>
                         <td class="px-6 py-4">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                @if($project->status == 'in_progress') bg-green-100 text-green-800
+                                @if($project->status == 'draft') bg-gray-200 text-gray-800
+                                @elseif($project->status == 'pending_contract') bg-orange-100 text-orange-800
+                                @elseif($project->status == 'in_progress') bg-green-100 text-green-800
                                 @elseif($project->status == 'completed') bg-blue-100 text-blue-800
                                 @elseif($project->status == 'on_hold') bg-yellow-100 text-yellow-800
                                 @elseif($project->status == 'cancelled') bg-red-100 text-red-800
                                 @else bg-gray-100 text-gray-800 @endif">
-                                @if($project->status == 'in_progress')
+                                
+                                @if($project->status == 'draft')
+                                    Bản nháp
+                                @elseif($project->status == 'pending_contract')
+                                    Chờ hợp đồng
+                                @elseif($project->status == 'in_progress')
                                     Đang thi công
                                 @elseif($project->status == 'completed')
                                     Hoàn thành
@@ -227,7 +251,7 @@
                                 @elseif($project->status == 'cancelled')
                                     Đã hủy
                                 @else
-                                    Đã lên kế hoạch
+                                    Không xác định
                                 @endif
                             </span>
                         </td>

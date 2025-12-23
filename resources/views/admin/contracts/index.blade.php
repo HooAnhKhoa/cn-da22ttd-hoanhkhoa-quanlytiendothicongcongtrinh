@@ -23,15 +23,15 @@
 
     <!-- Search and Filter -->
     <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-        <form method="GET" action="{{ route('admin.contracts.index') }}" class="space-y-4 md:space-y-0 md:grid md:grid-cols-4 md:gap-4">
+        <form method="GET" action="{{ route('admin.contracts.index') }}" class="space-y-4 md:space-y-0 md:grid md:grid-cols-6 md:gap-4">
             <!-- Search -->
-            <div>
+            <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm</label>
                 <div class="relative">
                     <input type="text" 
                            name="search" 
                            value="{{ request('search') }}"
-                           placeholder="Mã hợp đồng, nhà thầu..."
+                           placeholder="Số hợp đồng, tên hợp đồng, nhà thầu..."
                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,8 +45,7 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Dự án</label>
                 <select name="project_id" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        onchange="this.form.submit()">
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">Tất cả dự án</option>
                     @foreach($projects as $project)
                         <option value="{{ $project->id }}" {{ request('project_id') == $project->id ? 'selected' : '' }}>
@@ -60,8 +59,7 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
                 <select name="status" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        onchange="this.form.submit()">
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">Tất cả trạng thái</option>
                     @foreach(\App\Http\Controllers\Admin\ContractsController::getStatuses() as $value => $label)
                         <option value="{{ $value }}" {{ request('status') == $value ? 'selected' : '' }}>
@@ -71,8 +69,22 @@
                 </select>
             </div>
 
+            <!-- Payment Status Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">TT thanh toán</label>
+                <select name="payment_status" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Tất cả TT thanh toán</option>
+                    @foreach(\App\Http\Controllers\Admin\ContractsController::getPaymentStatuses() as $value => $label)
+                        <option value="{{ $value }}" {{ request('payment_status') == $value ? 'selected' : '' }}>
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
             <!-- Actions -->
-            <div class="flex items-end space-x-2">
+            <div class="flex items-end space-x-2 md:col-span-1">
                 <button type="submit" 
                         class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                     <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,7 +92,7 @@
                     </svg>
                     Lọc
                 </button>
-                @if(request()->hasAny(['search', 'project_id', 'status']))
+                @if(request()->hasAny(['search', 'project_id', 'status', 'payment_status', 'contractor_id', 'owner_id']))
                     <a href="{{ route('admin.contracts.index') }}" 
                        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
                         <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,7 +143,7 @@
                 </div>
                 <div class="ml-4">
                     <div class="text-lg font-bold text-gray-900">{{ $pendingCount }}</div>
-                    <div class="text-sm text-gray-600">Chờ xử lý</div>
+                    <div class="text-sm text-gray-600">Đang chờ</div>
                 </div>
             </div>
         </div>
@@ -158,13 +170,13 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Mã hợp đồng
+                            Hợp đồng
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Dự án
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Nhà thầu
+                            Chủ đầu tư
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Giá trị
@@ -193,10 +205,11 @@
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-gray-900">
                                         <a href="{{ route('admin.contracts.show', $contract) }}" class="hover:text-blue-600">
-                                            HĐ-{{ str_pad($contract->id, 6, '0', STR_PAD_LEFT) }}
+                                            {{ $contract->contract_number ?: 'HĐ-' . str_pad($contract->id, 6, '0', STR_PAD_LEFT) }}
                                         </a>
                                     </div>
-                                    <div class="text-sm text-gray-500">{{ $contract->signed_date->format('d/m/Y') }}</div>
+                                    <div class="text-sm text-gray-500">{{ $contract->contract_name ?: 'Không có tên' }}</div>
+                                    <div class="text-xs text-gray-400">{{ $contract->signed_date ? $contract->signed_date->format('d/m/Y') : 'Chưa ký' }}</div>
                                 </div>
                             </div>
                         </td>
@@ -205,36 +218,53 @@
                             <div class="text-sm text-gray-500">ID: {{ $contract->project_id }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-sm text-gray-900">{{ $contract->contractor->name ?? 'N/A' }}</div>
-                            <div class="text-sm text-gray-500">{{ $contract->contractor->email ?? '' }}</div>
-                        </td>
-                        <td class="px-6 py-4 text-sm font-bold text-gray-900">
-                            {{ number_format($contract->contract_value) }} đ
+                            <div class="text-sm text-gray-900">{{ $contract->owner->name ?? 'N/A' }}</div>
+                            <div class="text-sm text-gray-500">{{ $contract->contractor->name ?? '' }}</div>
+                            <div class="text-xs text-gray-400">Nhà thầu</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-sm text-gray-900">{{ $contract->due_date->format('d/m/Y') }}</div>
-                            @php
-                                $daysLeft = now()->diffInDays($contract->due_date, false);
-                            @endphp
-                            <div class="text-xs {{ $daysLeft < 0 ? 'text-red-600' : ($daysLeft < 30 ? 'text-yellow-600' : 'text-green-600') }}">
-                                @if($daysLeft < 0)
-                                    Quá hạn {{ abs($daysLeft) }} ngày
-                                @elseif($daysLeft == 0)
-                                    Hết hạn hôm nay
-                                @else
-                                    Còn {{ $daysLeft }} ngày
-                                @endif
+                            <div class="text-sm font-bold text-gray-900">
+                                {{ number_format($contract->contract_value) }} đ
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                Đã thanh toán: {{ number_format($contract->total_paid) }} đ
+                            </div>
+                            <div class="text-xs {{ $contract->remaining_amount > 0 ? 'text-red-600' : 'text-green-600' }}">
+                                Còn lại: {{ number_format($contract->remaining_amount) }} đ
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                @if($contract->status == 'active') bg-green-100 text-green-800
-                                @elseif($contract->status == 'completed') bg-blue-100 text-blue-800
-                                @elseif($contract->status == 'terminated') bg-yellow-100 text-yellow-800
-                                @elseif($contract->status == 'on_hold') bg-red-100 text-red-800
-                                @else bg-gray-100 text-gray-800 @endif">
-                                {{ \App\Http\Controllers\Admin\ContractsController::getStatuses()[$contract->status] ?? $contract->status }}
-                            </span>
+                            <div class="text-sm text-gray-900">{{ $contract->due_date ? $contract->due_date->format('d/m/Y') : 'N/A' }}</div>
+                            @if($contract->due_date)
+                                @php
+                                    $daysLeft = now()->diffInDays($contract->due_date, false);
+                                @endphp
+                                <div class="text-xs {{ $daysLeft < 0 ? 'text-red-600' : ($daysLeft < 30 ? 'text-yellow-600' : 'text-green-600') }}">
+                                    @if($daysLeft < 0)
+                                        Quá hạn {{ abs($daysLeft) }} ngày
+                                    @elseif($daysLeft == 0)
+                                        Hết hạn hôm nay
+                                    @else
+                                        Còn {{ $daysLeft }} ngày
+                                    @endif
+                                </div>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="space-y-1">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    @if($contract->status == 'active') bg-green-100 text-green-800
+                                    @elseif($contract->status == 'completed') bg-blue-100 text-blue-800
+                                    @elseif($contract->status == 'draft' || $contract->status == 'pending_signature') bg-yellow-100 text-yellow-800
+                                    @elseif($contract->status == 'terminated' || $contract->status == 'expired') bg-red-100 text-red-800
+                                    @elseif($contract->status == 'on_hold') bg-gray-100 text-gray-800
+                                    @else bg-gray-100 text-gray-800 @endif">
+                                    {{ \App\Http\Controllers\Admin\ContractsController::getStatuses()[$contract->status] ?? $contract->status }}
+                                </span>
+                                <div class="text-xs text-gray-500">
+                                    {{ \App\Http\Controllers\Admin\ContractsController::getPaymentStatuses()[$contract->payment_status] ?? $contract->payment_status }}
+                                </div>
+                            </div>
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center space-x-3">
@@ -253,6 +283,21 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                 </a>
+                                @if($contract->status == 'draft' || $contract->status == 'pending_signature')
+                                    <form action="{{ route('admin.contracts_approve', $contract) }}" 
+                                          method="POST" 
+                                          class="inline">
+                                        @csrf
+                                        <button type="submit" 
+                                                class="text-purple-600 hover:text-purple-900" 
+                                                title="Phê duyệt"
+                                                onclick="return confirm('Bạn có chắc muốn phê duyệt hợp đồng này?')">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                @endif
                                 <form action="{{ route('admin.contracts.destroy', $contract) }}" 
                                       method="POST" 
                                       class="inline"

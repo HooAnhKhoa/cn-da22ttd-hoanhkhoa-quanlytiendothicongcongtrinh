@@ -94,41 +94,72 @@
                 </div>
 
                 <!-- Ngân sách -->
-                <div>
-                    <label for="total_budget" class="block text-sm font-medium text-gray-700 mb-2">
-                        Ngân sách (VNĐ) <span class="text-red-500">*</span>
-                    </label>
-                    <input type="number" 
-                           name="total_budget" 
-                           id="total_budget"
-                           value="{{ old('total_budget', $project->total_budget) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                           required
-                           min="0"
-                           step="1000">
-                    @error('total_budget')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-money-bill-wave text-blue-500 text-lg"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h4 class="text-sm font-medium text-blue-800 mb-1">Thông tin ngân sách</h4>
+                            <p class="text-sm text-blue-700">
+                                Ngân sách: <span class="font-bold">{{ number_format($project->total_budget) }} VNĐ</span>
+                                <span class="text-xs text-blue-600 ml-2">
+                                    ({{ $project->contracts->count() }} hợp đồng)
+                                </span>
+                            </p>
+                            <p class="text-xs text-blue-600 mt-1">
+                                Ngân sách được tính tự động từ tổng giá trị các hợp đồng.
+                                <a href="{{ route('admin.contracts.index', ['project_id' => $project->id]) }}" 
+                                class="underline hover:text-blue-800">
+                                    Quản lý hợp đồng
+                                </a>
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Trạng thái -->
                 <div>
                     <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
-                        Trạng thái <span class="text-red-500">*</span>
+                        Trạng thái
                     </label>
-                    <select name="status" 
-                            id="status"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            required>
-                        @foreach(\App\Models\Project::getStatuses() as $value => $label)
-                            <option value="{{ $value }}" {{ old('status', $project->status) == $value ? 'selected' : '' }}>
-                                {{ $label }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('status')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    <div class="flex items-center">
+                        <span class="inline-flex items-center px-3 py-2 rounded-md bg-gray-100 border border-gray-300 text-gray-800 font-medium">
+                            @if($project->status == 'draft')
+                                <span class="inline-flex items-center">
+                                    <span class="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
+                                    Bản nháp
+                                </span>
+                            @elseif($project->status == 'pending_contract')
+                                <span class="inline-flex items-center">
+                                    <span class="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
+                                    Chờ hợp đồng
+                                </span>
+                            @elseif($project->status == 'in_progress')
+                                <span class="inline-flex items-center">
+                                    <span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                                    Đang thi công
+                                </span>
+                            @elseif($project->status == 'completed')
+                                <span class="inline-flex items-center">
+                                    <span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
+                                    Hoàn thành
+                                </span>
+                            @elseif($project->status == 'on_hold')
+                                <span class="inline-flex items-center">
+                                    <span class="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
+                                    Tạm dừng
+                                </span>
+                            @elseif($project->status == 'cancelled')
+                                <span class="inline-flex items-center">
+                                    <span class="w-2 h-2 bg-red-400 rounded-full mr-2"></span>
+                                    Đã hủy
+                                </span>
+                            @endif
+                        </span>
+                        <input type="hidden" name="status" value="{{ $project->status }}">
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Trạng thái không thể thay đổi từ trang này</p>
                 </div>
             </div>
 
@@ -163,11 +194,10 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 required>
                             <option value="">-- Chọn chủ đầu tư --</option>
-                            @foreach($users as $user)
-                                <option value="{{ $user->id }}"
-                                    {{ old('owner_id', optional($project->owner)->id) == $user->id ? 'selected' : '' }}>
-                                {{-- <option value="{{ $user->id }}" {{ old('owner_id', $project->owner_id) == $user->id ? 'selected' : '' }}> --}}
-                                    {{ $user->username }} ({{ $user->email }})
+                            @foreach($owners as $owner)
+                                <option value="{{ $owner->id }}"
+                                    {{ old('owner_id', $project->owner_id) == $owner->id ? 'selected' : '' }}>
+                                    {{ $owner->username }} ({{ $owner->email }})
                                 </option>
                             @endforeach
                         </select>

@@ -11,21 +11,22 @@ class ProjectController extends Controller
 {   
     public function index(Request $request)
     {
-        $query = Project::with(['owner', 'contractor', 'engineer']);
-    
+        $query = Project::with(['owner', 'contractor', 'engineer'])
+            ->withSum('contracts', 'contract_value'); // Thêm tổng hợp đồng
+
         // 🔍 Tìm kiếm theo tên dự án
         if ($request->filled('search')) {
             $query->where('project_name', 'like', '%' . $request->search . '%');
         }
-    
+
         // 🏷️ Lọc theo trạng thái
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-    
+
         // ⭐ LUÔN ĐẨY DỰ ÁN ĐÃ HỦY XUỐNG CUỐI
         $query->orderByRaw("status = 'cancelled' ASC");
-    
+
         // 🔃 Sắp xếp
         switch ($request->sort) {
             case 'oldest':
@@ -40,9 +41,9 @@ class ProjectController extends Controller
                 $query->orderBy('created_at', 'desc');
                 break;
         }
-    
+
         $projects = $query->paginate(12)->withQueryString();
-    
+
         return view('admin.projects.index', compact('projects'));
     }
     
@@ -71,20 +72,21 @@ class ProjectController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'project_name' => 'required|string|max:255',
+            'project_name' => 'required|string|max:255|unique:projects,project_name',
             'owner_id' => 'required|exists:users,id',
             'contractor_id' => 'required|exists:users,id',
             'engineer_id' => 'required|exists:users,id',
             'location' => 'required|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after:start_date',
-            'total_budget' => 'required|numeric|min:0',
             'description' => 'nullable|string',
-            'status' => 'required|in:planned,in_progress,completed,on_hold,cancelled'
+            'status' => 'sometimes|in:draft,pending_contract,in_progress,completed,on_hold,cancelled'
         ]);
 
-        // Thêm user_id của người tạo
-        $validated['user_id'] = auth()->id();
+        // Đặt trạng thái mặc định là "draft" nếu không có
+        if (!isset($validated['status'])) {
+            $validated['status'] = 'draft';
+        }
 
         // Tạo project
         $project = Project::create($validated);
@@ -99,6 +101,9 @@ class ProjectController extends Controller
             'owner',
             'contractor', 
             'engineer',
+            'contracts' => function($query) {
+                $query->orderBy('created_at', 'desc');
+            },
             'sites' => function($query) {
                 // Load số lượng tasks và tổng vật liệu đã dùng
                 $query->withCount(['tasks'])
@@ -107,21 +112,22 @@ class ProjectController extends Controller
                                 ->withSum('materialUsages as total_material_quantity', 'quantity');
                     }]);
             },
-            'milestones',
-            'contracts'
+            'milestones'
         ]);
         
-        return view('admin.projects.show', compact('project'));
+        $hasContracts = $project->contracts->count() > 0;
+
+        return view('admin.projects.show', compact('project', 'hasContracts'));
     }
 
     public function edit(Project $project)
     {
         // Lấy danh sách users để chọn cho đội ngũ dự án
-        $users = User::where('user_type', 'owner')->get();
+        $owners = User::where('user_type', 'owner')->get();
         $contractors = User::where('user_type', 'contractor')->get();
         $engineers = User::where('user_type', 'engineer')->get();
         
-        return view('admin.projects.edit', compact('project', 'users', 'contractors', 'engineers'));
+        return view('admin.projects.edit', compact('project', 'owners', 'contractors', 'engineers'));
     }
 
     public function update(Request $request, Project $project)
@@ -134,9 +140,8 @@ class ProjectController extends Controller
             'location' => 'required|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after:start_date',
-            'total_budget' => 'required|numeric|min:0',
             'description' => 'nullable|string',
-            'status' => 'required|in:planned,in_progress,completed,on_hold,cancelled'
+            'status' => 'required|in:draft,pending_contract,in_progress,completed,on_hold,cancelled'
         ]);
 
         $project->update($validated);

@@ -72,11 +72,18 @@ class Project extends Model
     public static function getStatuses()
     {
         return [
-            'planned' => 'Đang lập kế hoạch',
+            'draft' => 'Bản nháp',
+            'pending_contract' => 'Chờ hợp đồng',
             'in_progress' => 'Đang thi công',
-            'on_hold' => 'Tạm dừng',
             'completed' => 'Hoàn thành',
+            'on_hold' => 'Tạm dừng',
             'cancelled' => 'Đã hủy'
         ];
+    }
+
+    // Tính tổng ngân sách từ các hợp đồng
+    public function getTotalBudgetAttribute()
+    {
+        return $this->contracts()->sum('contract_value');
     }
 }

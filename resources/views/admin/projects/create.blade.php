@@ -24,6 +24,9 @@
             <form action="{{ route('admin.projects.store') }}" method="POST" class="p-8">
                 @csrf
                 
+                <!-- Hidden input cho trạng thái mặc định -->
+                <input type="hidden" name="status" value="draft">
+                
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Cột trái -->
                     <div class="space-y-6">
@@ -123,53 +126,23 @@
 
                     <!-- Cột phải -->
                     <div class="space-y-6">
-                        <!-- Ngân sách -->
-                        <div>
-                            <label for="total_budget" class="block text-lg font-semibold text-gray-800 mb-3">
-                                Ngân sách (VND) <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <input 
-                                    type="number" 
-                                    name="total_budget" 
-                                    id="total_budget"
-                                    value="{{ old('total_budget') }}"
-                                    class="w-full px-4 py-3 pr-12 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all"
-                                    placeholder="0"
-                                    min="0"
-                                    step="1000"
-                                    required
-                                >
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                                    <span class="text-gray-500 font-medium">₫</span>
+                        <!-- Thông báo trạng thái mặc định -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-info-circle text-blue-500 text-xl mt-1"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <h4 class="text-lg font-semibold text-blue-800 mb-1">Trạng thái dự án</h4>
+                                    <p class="text-blue-700">
+                                        Dự án mới sẽ tự động được đặt trạng thái: 
+                                        <span class="font-bold text-blue-900">"Bản nháp"</span>
+                                    </p>
+                                    <p class="text-blue-600 text-sm mt-2">
+                                        Bạn có thể thay đổi trạng thái sau khi tạo dự án.
+                                    </p>
                                 </div>
                             </div>
-                            @error('total_budget')
-                                <p class="mt-2 text-base text-red-600 font-medium">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Trạng thái -->
-                        <div>
-                            <label for="status" class="block text-lg font-semibold text-gray-800 mb-3">
-                                Trạng thái <span class="text-red-500">*</span>
-                            </label>
-                            <select 
-                                name="status" 
-                                id="status"
-                                class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all"
-                                required
-                            >
-                                <option value="">Chọn trạng thái</option>
-                                <option value="planned" {{ old('status') == 'planned' ? 'selected' : '' }}>Lập kế hoạch</option>
-                                <option value="in_progress" {{ old('status') == 'in_progress' ? 'selected' : '' }}>Đang thi công</option>
-                                <option value="on_hold" {{ old('status') == 'on_hold' ? 'selected' : '' }}>Tạm dừng</option>
-                                <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }}>Hoàn thành</option>
-                                <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Đã hủy</option>
-                            </select>
-                            @error('status')
-                                <p class="mt-2 text-base text-red-600 font-medium">{{ $message }}</p>
-                            @enderror
                         </div>
 
                         <!-- Thông tin người dùng -->

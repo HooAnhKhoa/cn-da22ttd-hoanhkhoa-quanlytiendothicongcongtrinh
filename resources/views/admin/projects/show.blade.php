@@ -61,22 +61,31 @@
                     </span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600">Ngân sách:</span>
-                    <span class="font-medium text-green-600">{{ number_format($project->total_budget) }} VNĐ</span>
+                    <span class="text-gray-600">Ngân sách (tổng hợp đồng):</span>
+                    <span class="font-medium text-green-600">
+                        {{ number_format($project->total_budget) }} VNĐ
+                        <span class="text-sm text-gray-500 ml-2">
+                            ({{ $project->contracts->count() }} hợp đồng)
+                        </span>
+                    </span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-600">Trạng thái:</span>
                     <span class="font-medium text-gray-800">
-                        @if($project->status == 'in_progress') 
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Đang thực hiện
+                        @if($project->status == 'draft') 
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-800">
+                                Bản nháp
                             </span>
-                        @elseif($project->status == 'planned') 
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                Lập kế hoạch
+                        @elseif($project->status == 'pending_contract') 
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                Chờ hợp đồng
+                            </span>
+                        @elseif($project->status == 'in_progress') 
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Đang thi công
                             </span>
                         @elseif($project->status == 'completed') 
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                 Hoàn thành
                             </span>
                         @elseif($project->status == 'on_hold') 
@@ -90,7 +99,7 @@
                         @endif
                     </span>
                 </div>
-                
+                                
                 <!-- Statistics Box -->
                 <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                     <div class="flex items-center">
@@ -226,10 +235,12 @@
             <span class="text-sm font-normal text-gray-500 ml-2">({{ $project->sites->count() }} công trường)</span>
         </h2>
         @if($project->status !== 'cancelled')
-            <a href="{{ route('admin.sites.create', ['project_id' => $project->id]) }}" 
-            class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                <i class="fas fa-plus mr-2"></i>Thêm công trường
-            </a>
+            @if($project->contracts->count() > 0)
+                <a href="{{ route('admin.sites.create', ['project_id' => $project->id]) }}" 
+                class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                    <i class="fas fa-plus mr-2"></i>Thêm công trường
+                </a>
+            @endif
         @endif
         
     </div>
@@ -375,12 +386,17 @@
                     <i class="fas fa-map-marker-alt text-3xl text-gray-400"></i>
                 </div>
                 @if($project->status !== 'cancelled')
-                    <h3 class="text-lg font-medium text-gray-700 mb-2">Chưa có công trường nào</h3>
-                    <p class="text-gray-500 mb-6">Dự án chưa được gán công trường</p>
-                    <a href="{{ route('admin.sites.create', ['project_id' => $project->id]) }}" 
-                        class="inline-flex items-center px-6 py-3 bg-green-600 border border-transparent rounded-lg font-semibold text-white hover:bg-green-700 transition-colors">
-                    <i class="fas fa-plus mr-2"></i>Tạo công trường đầu tiên
-                </a>
+                    @if($project->contracts->count() > 0)
+                        <h3 class="text-lg font-medium text-gray-700 mb-2">Chưa có công trường nào</h3>
+                        <p class="text-gray-500 mb-6">Dự án chưa được gán công trường</p>
+                        <a href="{{ route('admin.sites.create', ['project_id' => $project->id]) }}" 
+                            class="inline-flex items-center px-6 py-3 bg-green-600 border border-transparent rounded-lg font-semibold text-white hover:bg-green-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Tạo công trường đầu tiên
+                    </a>
+                    @else
+                        <h3 class="text-lg font-medium text-gray-700 mb-2">Dự án chưa có hợp đồng</h3>
+                        <p class="text-gray-500 mb-6">Không thể thêm công trường vào dự án chưa có hợp đồng</p>
+                    @endif
                 @else
                     <h3 class="text-lg font-medium text-gray-700 mb-2">Dự án đã bị hủy</h3>
                     <p class="text-gray-500 mb-6">Không thể thêm công trường vào dự án đã hủy</p>
