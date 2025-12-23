@@ -1,27 +1,5 @@
 @auth
 <aside class="w-64 bg-white shadow-xl min-h-screen border-r border-slate-200">
-    {{-- <div class="p-5 border-b border-slate-100">
-        <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center shadow-sm">
-                <i class="fas fa-hard-hat text-indigo-600 text-lg"></i>
-            </div>
-            <div class="flex-1">
-                <h3 class="font-bold text-slate-900 text-sm">
-                    {{ auth()->user()->name ?? auth()->user()->username }}
-                </h3>
-                <p class="text-xs text-slate-500 font-medium capitalize mt-0.5">
-                    @if(auth()->user()->user_type === 'admin')
-                        <span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-lg text-[10px] font-bold">Quản trị viên</span>
-                    @elseif(auth()->user()->user_type === 'client')
-                        <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-lg text-[10px] font-bold">Khách hàng</span>
-                    @else
-                        <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded-lg text-[10px] font-bold">{{ auth()->user()->user_type }}</span>
-                    @endif
-                </p>
-            </div>
-        </div>
-    </div> --}}
-    
     <nav class="p-4">
         <ul class="space-y-1">
             <!-- Dashboard -->
@@ -137,8 +115,7 @@
                     </a>
                 </li>
                 
-            @elseif(auth()->user()->user_type === 'client')
-                <!-- Menu dành cho Client -->
+            @elseif(in_array(auth()->user()->user_type, ['client', 'owner', 'contractor', 'engineer']))                <!-- Menu dành cho Client -->
                 <li class="mt-8 mb-3">
                     <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Dự án của tôi</p>
                 </li>
@@ -173,7 +150,8 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('client.payments.index') }}"
+                    {{-- <a href="{{ route('client.payments.index') }}" --}}
+                    <a href="#"
                         class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
                         {{ request()->routeIs('client.payments.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
                         <div class="w-8 h-8 flex items-center justify-center">

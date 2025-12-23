@@ -82,4 +82,23 @@ class User extends Authenticatable
     {
         return $this->hasMany(Delay::class, 'responsible_engineer');
     }
+    public function contracts()
+    {
+        return $this->hasMany(Contract::class);
+    }
+
+    public function sites()
+    {
+        return $this->hasMany(Site::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
 }

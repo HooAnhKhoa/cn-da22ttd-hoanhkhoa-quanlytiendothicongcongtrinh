@@ -24,7 +24,9 @@ use App\Http\Controllers\Admin\ContractsapproveController as AdminContractsappro
 use App\Http\Controllers\Client\ProjectController as ClientProjectController;
 use App\Http\Controllers\Client\ProgressController as ClientProgressController;
 use App\Http\Controllers\Client\IssueController as ClientIssueController;
-
+use App\Http\Controllers\Client\DashboardController as ClientDashboardController;
+use App\Http\Controllers\Client\ContractController as ClientContractController;
+use App\Http\Controllers\Client\OwnerContractController;
 /*
 |--------------------------------------------------------------------------
 | Public Routes
@@ -90,12 +92,41 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 */
 Route::middleware(['auth', 'client'])->prefix('client')->name('client.')->group(function () {
     // Dashboard
-    Route::get('/dashboard', [HomeController::class, 'clientDashboard'])->name('dashboard');
+    Route::get('/dashboard', [ClientDashboardController::class, 'index'])->name('dashboard');
 
-    // Chỉ xem (Index & Show)
-    Route::resource('projects', ClientProjectController::class)->only(['index', 'show']);
-    Route::resource('progress', ClientProgressController::class)->only(['index', 'show']);
+    Route::middleware(['role:contractor'])->group(function () {
+        Route::get('/contracts', [ClientContractController::class, 'index'])->name('contracts.index');
+        Route::get('/contracts/{contract}', [ClientContractController::class, 'show'])->name('contracts.show');
+        
+        Route::get('/progress', [ClientProgressController::class, 'index'])->name('progress.index');
+        Route::get('/progress/{progress}', [ClientProgressController::class, 'show'])->name('progress.show');
+    });
     
-    // Được phép tương tác (Gửi vướng mắc)
-    Route::resource('issues', ClientIssueController::class);
+    // Owner only routes
+    Route::middleware(['role:owner'])->group(function () {
+        Route::get('/my-projects', [OwnerProjectController::class, 'index'])->name('owner.projects.index');
+        Route::get('/my-projects/{project}', [OwnerProjectController::class, 'show'])->name('owner.projects.show');
+        Route::get('/financial-reports', [OwnerReportController::class, 'index'])->name('owner.reports.index');
+        Route::post('/contracts/{contract}/approve', [OwnerContractController::class, 'approve'])
+                ->name('contracts_approve'); 
+    });
+    // Engineer only routes
+    Route::middleware(['role:engineer'])->group(function () {
+        Route::get('/my-tasks', [EngineerTaskController::class, 'index'])->name('engineer.tasks.index');
+        Route::get('/my-tasks/{task}', [EngineerTaskController::class, 'show'])->name('engineer.tasks.show');
+        Route::post('/progress/create', [EngineerProgressController::class, 'store'])->name('engineer.progress.store');
+    });
+    
+    // Routes chung cho nhiều role
+    Route::middleware(['role:contractor,owner,engineer'])->group(function () {
+        Route::get('/projects', [ClientProjectController::class, 'index'])->name('projects.index');
+        Route::get('/projects/{project}', [ClientProjectController::class, 'show'])->name('projects.show');
+        
+        Route::get('/tasks', [ClientTaskController::class, 'index'])->name('tasks.index');
+        Route::get('/tasks/{task}', [ClientTaskController::class, 'show'])->name('tasks.show');
+    });
+    Route::middleware(['role:contractor,owner'])->group(function () {
+        Route::get('/contracts', [ClientContractController::class, 'index'])->name('contracts.index');
+        Route::get('/contracts/{contract}', [ClientContractController::class, 'show'])->name('contracts.show');
+    });
 });

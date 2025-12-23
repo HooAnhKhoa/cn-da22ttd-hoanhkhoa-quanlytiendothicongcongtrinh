@@ -147,15 +147,18 @@ class ContractsController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
-        $projects = Project::where('status', 'in_progress')->get();
+        $projects = Project::all();
         $contractors = User::where('user_type', 'contractor')->get();
         $owners = User::where('user_type', 'owner')->get();
         $statuses = self::getStatuses();
+        $nextId = (\App\Models\Contract::max('id') ?? 0) + 1;
+        $autoContractNumber = 'HD-' . date('Y') . '-' . str_pad($nextId, 3, '0', STR_PAD_LEFT);
+        $selectedProjectId = $request->query('project_id');
         $paymentStatuses = self::getPaymentStatuses();
 
-        return view('admin.contracts.create', compact('projects', 'contractors', 'owners', 'statuses', 'paymentStatuses'));
+        return view('admin.contracts.create', compact('projects', 'contractors', 'owners', 'statuses', 'paymentStatuses', 'selectedProjectId', 'autoContractNumber'));
     }
 
     /**
@@ -204,7 +207,7 @@ class ContractsController extends Controller
      */
     public function show(Contract $contract)
     {
-        $contract->load(['project', 'owner', 'contractor', 'payments', 'approvals.approver']);
+        $contract->load(['project', 'owner', 'contractor', 'payments']);
         
         $totalPaid = $contract->total_paid;
         $remaining = $contract->remaining_amount;
