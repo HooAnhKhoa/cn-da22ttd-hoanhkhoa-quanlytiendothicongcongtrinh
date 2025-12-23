@@ -1,5 +1,3 @@
-[file name]: show.blade.php
-[file content begin]
 @extends('layouts.app')
 
 @section('title', $project->project_name . ' - Chi tiết dự án')
@@ -606,4 +604,3 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 </style>
 @endpush
-[file content end]

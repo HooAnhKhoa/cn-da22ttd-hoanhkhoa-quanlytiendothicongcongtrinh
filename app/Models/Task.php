@@ -16,14 +16,23 @@ class Task extends Model
     protected $fillable = [
         'site_id',
         'parent_id',
+        'assigned_engineer_id',
+        'task_code',
         'task_name',
         'description',
+        'task_budget',
         'start_date',
         'end_date',
         'planned_duration',
         'actual_duration',
         'progress_percent',
-        'status'
+        'status',
+        'payment_status',
+        'owner_review',
+        'owner_rating',
+        'is_approved',
+        'approved_at',
+        'approved_by'
     ];
 
     // Định dạng ngày tháng

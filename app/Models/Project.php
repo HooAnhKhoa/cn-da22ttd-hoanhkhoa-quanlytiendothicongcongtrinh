@@ -18,7 +18,6 @@ class Project extends Model
         'location',
         'start_date',
         'end_date',
-        'total_budget',
         'description',
         'status'
     ];

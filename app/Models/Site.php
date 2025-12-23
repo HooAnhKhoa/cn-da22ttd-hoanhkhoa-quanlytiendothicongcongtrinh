@@ -13,13 +13,17 @@ class Site extends Model
     
     protected $fillable = [
         'project_id',
+        'site_code',
         'site_name',
         'description',
+        'total_budget',
+        'paid_amount',
+        // 'remaining_budget',
         'start_date',
         'end_date',
         'progress_percent',
-        'status'
-        // KHÔNG có engineer_id, contractor_id, supervisor_id
+        'status',
+        'payment_status'
     ];
 
     protected $casts = [

@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Project;
 use App\Models\Site;
+use App\Models\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class SiteFactory extends Factory
@@ -12,26 +12,74 @@ class SiteFactory extends Factory
 
     public function definition(): array
     {
-        // Lấy hoặc tạo mới Project để đảm bảo luôn có dữ liệu liên kết
-        $project = Project::inRandomOrder()->first() ?? Project::factory()->create();
+        $project = Project::factory()->create();
+        $startDate = $this->faker->dateTimeBetween('-3 months', '+1 month');
+        $endDate = $this->faker->optional(0.8)->dateTimeBetween($startDate, '+6 months');
         
-        $startDate = $this->faker->dateTimeBetween($project->start_date, $project->end_date ?? '+3 months');
-        
-        // Đảm bảo end_date sau start_date và nằm trong phạm vi dự án
-        $endDate = $this->faker->dateTimeBetween($startDate, $project->end_date ?? '+1 year');
+        $totalBudget = $this->faker->numberBetween(5000000, 50000000);
+        $paidAmount = $this->faker->numberBetween(0, $totalBudget * 0.7);
         
         return [
             'project_id' => $project->id,
-            'site_name' => 'Công trường ' . $this->faker->city, // Đổi tên cho chuyên nghiệp hơn
-            'description' => $this->faker->paragraph(2),
+            'site_code' => $this->faker->unique()->bothify('SITE-####'),
+            'site_name' => $this->faker->words(2, true) . ' Site',
+            'description' => $this->faker->paragraph(),
+            'total_budget' => $totalBudget,
+            'paid_amount' => $paidAmount,
+            // KHÔNG thêm 'remaining_budget' vào đây - nó sẽ tự động tính
             'start_date' => $startDate,
             'end_date' => $endDate,
-            // Sử dụng randomFloat để khớp với kiểu decimal(5,2) trong database
-            'progress_percent' => $this->faker->randomFloat(2, 0, 100),
-            // Đồng bộ đầy đủ trạng thái từ Model Site
-            'status' => $this->faker->randomElement(['planned', 'in_progress', 'completed', 'on_hold', 'cancelled']),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'progress_percent' => $this->faker->numberBetween(0, 100),
+            'status' => $this->faker->randomElement(['planned', 'in_progress', 'on_hold', 'completed']),
+            'payment_status' => $this->faker->randomElement(['unpaid', 'partially_paid', 'fully_paid']),
         ];
+    }
+
+    // XÓA HOÀN TOÀN phương thức configure() hoặc sửa như sau:
+    public function configure()
+    {
+        return $this->afterCreating(function (Site $site) {
+            // KHÔNG cố gắng set remaining_budget thủ công
+            // remaining_budget sẽ tự động tính từ total_budget - paid_amount
+        });
+    }
+
+    // State methods
+    public function planned(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'planned',
+            'progress_percent' => 0,
+            'payment_status' => 'unpaid',
+            'paid_amount' => 0,
+        ]);
+    }
+
+    public function inProgress(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'in_progress',
+            'progress_percent' => $this->faker->numberBetween(1, 99),
+            'payment_status' => 'partially_paid',
+            'paid_amount' => $this->faker->numberBetween(1000000, $attributes['total_budget'] * 0.7),
+        ]);
+    }
+
+    public function completed(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'completed',
+            'progress_percent' => 100,
+            'payment_status' => 'fully_paid',
+            'paid_amount' => $attributes['total_budget'],
+            'end_date' => $this->faker->dateTimeBetween('-1 month', 'now'),
+        ]);
+    }
+
+    public function withBudget(int $min = 1000000, int $max = 50000000): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'total_budget' => $this->faker->numberBetween($min, $max),
+        ]);
     }
 }

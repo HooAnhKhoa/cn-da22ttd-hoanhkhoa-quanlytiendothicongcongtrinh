@@ -26,6 +26,8 @@ class DatabaseSeeder extends Seeder
             DrawingSeeder::class,
             ContractSeeder::class,
             PaymentSeeder::class,
+            ContractApprovalSeeder::class,
+            TaskReviewSeeder::class,    
         ]);
     }
 }

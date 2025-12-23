@@ -12,22 +12,16 @@ class ProjectFactory extends Factory
 
     public function definition(): array
     {
-        $startDate = $this->faker->dateTimeBetween('-1 year', '+1 month');
-        $endDate = $this->faker->dateTimeBetween($startDate, '+1 year');
-        
         return [
-            'project_name' => $this->faker->words(3, true) . ' Project',
-            'owner_id' => User::factory()->owner(),
-            'contractor_id' => User::factory()->contractor(),
-            'engineer_id' => User::factory()->engineer(),
-            'location' => $this->faker->city() . ', ' . $this->faker->state(),
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'total_budget' => $this->faker->randomFloat(2, 100000, 5000000),
-            'description' => $this->faker->paragraph(3),
-            'status' => $this->faker->randomElement(['planned', 'in_progress', 'completed', 'on_hold']),
-            'created_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
-            'updated_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
+            'project_name' => $this->faker->unique()->words(3, true) . ' Project ' . $this->faker->unique()->numberBetween(1, 100000),
+            'owner_id' => User::factory(),
+            'contractor_id' => User::factory(),
+            'engineer_id' => User::factory(),
+            'location' => $this->faker->city . ', ' . $this->faker->state,
+            'start_date' => $this->faker->dateTimeBetween('-1 year', '+1 year'),
+            'end_date' => $this->faker->optional()->dateTimeBetween('+1 year', '+2 years'),
+            'description' => $this->faker->paragraph(),
+            'status' => $this->faker->randomElement(['draft', 'pending_contract', 'in_progress', 'on_hold', 'completed']),
         ];
     }
 }

@@ -6,7 +6,6 @@ use App\Models\Contract;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Carbon\Carbon;
 
 class ContractFactory extends Factory
 {
@@ -15,36 +14,78 @@ class ContractFactory extends Factory
     public function definition(): array
     {
         $project = Project::inRandomOrder()->first() ?? Project::factory()->create();
-        $contractor = User::where('user_type', 'contractor')->inRandomOrder()->first() ?? User::factory()->contractor()->create();
+        $owner = User::where('user_type', 'owner')->inRandomOrder()->first() ?? User::factory()->create(['user_type' => 'owner']);
+        $contractor = User::where('user_type', 'contractor')->inRandomOrder()->first() ?? User::factory()->create(['user_type' => 'contractor']);
         
-        $now = Carbon::now();
-        $projectStart = Carbon::parse($project->start_date);
-        
-        // Nếu project start_date trong tương lai, điều chỉnh signed_date
-        if ($projectStart->greaterThan($now)) {
-            // Nếu project bắt đầu trong tương lai, signed_date có thể là hiện tại hoặc quá khứ gần
-            $signedDate = $this->faker->dateTimeBetween('-2 months', $now);
-        } else {
-            // Nếu project đã bắt đầu, signed_date có thể trước hoặc sau start_date
-            $signedDate = $this->faker->dateTimeBetween(
-                $projectStart->copy()->subMonths(3), // Có thể ký trước 3 tháng
-                $projectStart->copy()->addMonths(1)  // Hoặc sau start_date 1 tháng
-            );
-        }
-        
-        // due_date phải sau signed_date
-        $dueDate = $this->faker->dateTimeBetween(
-            $signedDate,
-            $signedDate instanceof Carbon ? $signedDate->copy()->addYears(2) : Carbon::parse($signedDate)->addYears(2)
-        );
+        $contractValue = $this->faker->numberBetween(1000000, 100000000);
+        $advancePercent = $this->faker->numberBetween(10, 30);
+        $advancePayment = $contractValue * $advancePercent / 100;
+
+        // Đảm bảo ngày ký và ngày hết hạn logic với nhau
+        $signedDate = $this->faker->dateTimeBetween('-1 year', 'now');
+        $dueDate = $this->faker->dateTimeBetween($signedDate, '+2 years'); // Luôn sau ngày ký
         
         return [
             'project_id' => $project->id,
+            'owner_id' => $owner->id,
             'contractor_id' => $contractor->id,
-            'contract_value' => $this->faker->randomFloat(2, 50000, 2000000),
+            'contract_value' => $contractValue,
+            'advance_payment' => $advancePayment,
             'signed_date' => $signedDate,
             'due_date' => $dueDate,
-            'status' => $this->faker->randomElement(['active', 'completed', 'terminated', 'on_hold']),
+            'status' => $this->faker->randomElement(['draft', 'pending_signature', 'active', 'completed']),
+            'payment_status' => $this->faker->randomElement(['unpaid', 'partially_paid', 'fully_paid']),
+            'total_paid' => $this->faker->numberBetween(0, $contractValue),
+            'contract_number' => 'CT-' . $this->faker->unique()->numberBetween(1000, 9999),
+            'contract_name' => $this->faker->words(3, true) . ' Contract',
+            'description' => $this->faker->paragraph(),
+            'contract_file_path' => $this->faker->optional(0.7)->filePath(),
+            'contract_file_name' => $this->faker->optional(0.7)->word() . '.pdf',
+            'contract_file_size' => $this->faker->optional()->numberBetween(1024, 10485760),
+            'contract_file_mime' => $this->faker->optional()->randomElement(['application/pdf', 'application/msword']),
+            'additional_files' => $this->faker->optional(0.3)->randomElement([
+                [['name' => 'phuluc1.pdf', 'path' => 'contracts/phuluc1.pdf']],
+                [['name' => 'bieumau.docx', 'path' => 'contracts/bieumau.docx']]
+            ]),
         ];
+    }
+
+    // ĐÃ XÓA PHƯƠNG THỨC configure() VÌ GÂY LỖI VỚI CỘT GENERATED
+
+    // State methods
+    public function draft(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'draft',
+            'payment_status' => 'unpaid',
+            'total_paid' => 0,
+        ]);
+    }
+
+    public function pendingSignature(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'pending_signature',
+            'payment_status' => 'unpaid',
+        ]);
+    }
+
+    public function active(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'active',
+            'payment_status' => $this->faker->randomElement(['unpaid', 'partially_paid']),
+            'signed_date' => $this->faker->dateTimeBetween('-3 months', 'now'),
+        ]);
+    }
+
+    public function completed(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'completed',
+            'payment_status' => 'fully_paid',
+            // Lưu ý: total_paid sẽ lấy giá trị contract_value có sẵn trong definition
+            'total_paid' => $attributes['contract_value'] ?? 1000000, 
+        ]);
     }
 }

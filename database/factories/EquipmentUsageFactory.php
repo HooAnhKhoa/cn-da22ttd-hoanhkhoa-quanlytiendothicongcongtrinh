@@ -19,28 +19,38 @@ class EquipmentUsageFactory extends Factory
         $equipment = Equipment::inRandomOrder()->first() ?? Equipment::factory()->create();
         $engineer = User::where('user_type', 'engineer')->inRandomOrder()->first() ?? User::factory()->engineer()->create();
         
-        // Đảm bảo start_time nằm trong khoảng thời gian của task và có đủ thời gian cho end_time
+        // 1. Lấy mốc thời gian cơ bản
         $taskStart = Carbon::parse($task->start_date);
         $taskEnd = $task->end_date ? Carbon::parse($task->end_date) : Carbon::now();
-        
-        // Đảm bảo taskEnd ít nhất 8 giờ sau taskStart
-        if ($taskEnd->diffInHours($taskStart) < 8) {
-            $taskEnd = $taskStart->copy()->addHours(24); // Thêm 24 giờ nếu không đủ
+
+        // 2. CHỐT CHẶN 1: Đảm bảo taskEnd phải sau taskStart
+        if ($taskStart->gt($taskEnd)) {
+            $taskEnd = $taskStart->copy()->addHours(24);
         }
+
+        // 3. Tính toán maxStartTime (Điểm muộn nhất có thể bắt đầu sử dụng máy)
+        // Chúng ta trừ đi 2 giờ để dành chỗ cho end_time
+        $maxStartTime = $taskEnd->copy()->subHours(2);
+
+        // 4. CHỐT CHẶN 2: Nếu sau khi trừ, maxStartTime lại nhỏ hơn taskStart
+        // thì ta ép maxStartTime bằng taskEnd và lùi taskStart lại một chút
+        if ($taskStart->gt($maxStartTime)) {
+            $maxStartTime = $taskEnd;
+            $taskStart = $maxStartTime->copy()->subMinutes(30);
+        }
+
+        // Tạo start_time an toàn
+        $startTime = $this->faker->dateTimeBetween($taskStart, $maxStartTime);
         
-        // Tạo start_time với đủ khoảng trống cho end_time
-        $maxStartTime = $taskEnd->copy()->subHours(8); // Đảm bảo có ít nhất 8 giờ trước taskEnd
-        $startTime = $this->faker->dateTimeBetween(
-            $taskStart, 
-            $maxStartTime
-        );
+        // 5. Tạo minEndTime (ít nhất 30 phút sau khi bắt đầu)
+        $minEndTime = Carbon::parse($startTime)->addMinutes(30);
         
-        // Tạo end_time trong khoảng từ start_time đến taskEnd, nhưng ít nhất 1 giờ sau start_time
-        $minEndTime = (new Carbon($startTime))->addHours(1);
-        $endTime = $this->faker->dateTimeBetween(
-            $minEndTime, 
-            $taskEnd
-        );
+        // 6. CHỐT CHẶN 3: Đảm bảo minEndTime không vượt quá taskEnd
+        if ($minEndTime->gt($taskEnd)) {
+            $taskEnd = $minEndTime->copy()->addMinutes(30);
+        }
+
+        $endTime = $this->faker->dateTimeBetween($minEndTime, $taskEnd);
         
         return [
             'task_id' => $task->id,
