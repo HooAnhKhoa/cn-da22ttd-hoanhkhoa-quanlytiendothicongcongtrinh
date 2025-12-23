@@ -14,30 +14,32 @@ return new class extends Migration
         Schema::create('sites', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained('projects');
+            $table->string('site_code')->unique()->nullable();
             $table->string('site_name');
             $table->text('description')->nullable();
+            
+            // Ngân sách của site (tổng từ các tasks)
+            $table->decimal('total_budget', 15, 2)->default(0);
+            $table->decimal('paid_amount', 15, 2)->default(0)->comment('Tổng đã thanh toán');
+            $table->decimal('remaining_budget', 15, 2)->storedAs('total_budget - paid_amount');
+            
             $table->date('start_date');
             $table->date('end_date')->nullable();
-            // Chỉ giữ lại một khai báo progress_percent duy nhất
-            // Sử dụng decimal(5,2) để lưu được độ chính xác cao hơn (ví dụ 99.50%)
-            $table->decimal('progress_percent', 5, 2)->default(0); 
-            $table->enum('status', ['planned', 'in_progress', 'completed', 'on_hold', 'cancelled'])->default('planned');
+            $table->decimal('progress_percent', 5, 2)->default(0);
+            
+            // Trạng thái site
+            $table->enum('status', ['planned', 'pending_contract', 'in_progress', 'completed', 'on_hold', 'cancelled'])->default('planned');
+            
+            // Trạng thái thanh toán
+            $table->enum('payment_status', ['unpaid', 'partially_paid', 'fully_paid', 'overdue'])->default('unpaid');
+            
             $table->timestamps();
-
-
-
-// - id
-// - project_id (FK)
-// - site_code
-// - name
-// - description
-// - start_date
-// - end_date
-// - progress_percent
-// - status
-// - created_at
-// - updated_at
-
+            $table->softDeletes();
+            
+            // Indexes
+            $table->index(['project_id', 'status']);
+            $table->index(['status', 'payment_status']);
+            $table->index('site_code');
         });
     }
 

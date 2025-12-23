@@ -20,26 +20,14 @@ return new class extends Migration
             $table->string('location');
             $table->date('start_date');
             $table->date('end_date')->nullable();
-            $table->decimal('total_budget', 15, 2);
             $table->text('description')->nullable();
-            $table->enum('status', ['planned', 'in_progress', 'completed', 'on_hold', 'cancelled'])->default('planned');
+            $table->enum('status', ['draft', 'pending_contract', 'in_progress', 'completed', 'on_hold', 'cancelled'])->default('draft');
             $table->timestamps();
 
-// - id
-// - project_code
-// - name
-// - owner_id (FK → users where user_type='owner')
-// - contractor_id (FK → contractors)
-// - engineer_id (FK → employees)  ← kỹ sư chính
-// - location
-// - start_date
-// - end_date
-// - total_budget
-// - description
-// - status
-// - created_at
-// - updated_at
-
+            // Indexes
+            $table->index(['owner_id', 'status']);
+            $table->index(['contractor_id', 'status']);
+            $table->index(['status', 'start_date']);
         });
     }
 
