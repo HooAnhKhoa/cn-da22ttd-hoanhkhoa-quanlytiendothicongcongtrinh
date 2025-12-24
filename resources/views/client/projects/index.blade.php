@@ -10,20 +10,11 @@
             <h1 class="text-3xl font-bold text-gray-900">Quản lý Dự án</h1>
             <p class="text-gray-600 mt-2">Danh sách dự án trong hệ thống</p>
         </div>
-        <div class="flex space-x-3">
-            <a href="{{ route('admin.projects.create') }}" 
-               class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Thêm Dự án
-            </a>
-        </div>
     </div>
 
     <!-- Search and Filter -->
     <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-        <form method="GET" action="{{ route('admin.projects.index') }}" class="space-y-4 md:space-y-0 md:grid md:grid-cols-4 md:gap-4">
+        <form method="GET" action="{{ route('client.projects.index') }}" class="space-y-4 md:space-y-0 md:grid md:grid-cols-4 md:gap-4">
             <!-- Search -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm</label>
@@ -79,7 +70,7 @@
                     Lọc
                 </button>
                 @if(request()->hasAny(['search', 'status', 'sort']))
-                    <a href="{{ route('admin.projects.index') }}" 
+                    <a href="{{ route('client.projects.index') }}" 
                        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
                         <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -194,7 +185,7 @@
                                 </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-gray-900">
-                                        <a href="{{ route('admin.projects.show', $project) }}" class="hover:text-blue-600">
+                                        <a href="{{ route('client.projects.show', $project) }} class="hover:text-blue-600">
                                             {{ $project->project_name }}
                                         </a>
                                     </div>
@@ -257,7 +248,7 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center space-x-3">
-                                <a href="{{ route('admin.projects.show', $project) }}" 
+                                <a href="{{ route('client.projects.show', $project) }}" 
                                    class="text-blue-600 hover:text-blue-900" 
                                    title="Xem chi tiết">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -265,8 +256,8 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                     </svg>
                                 </a>
-                                @if($project->status !== 'cancelled')
-                                <a href="{{ route('admin.projects.edit', $project) }}" 
+                                {{-- @if($project->status !== 'cancelled')
+                                <a href="{{ route('client.projects.edit', $project) }}" 
                                    class="text-green-600 hover:text-green-900" 
                                    title="Chỉnh sửa">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -274,7 +265,7 @@
                                     </svg>
                                 </a>
                                 @endif
-                                <form action="{{ route('admin.projects.destroy', $project) }}" 
+                                <form action="{{ route('client.projects.destroy', $project) }}" 
                                       method="POST" 
                                       class="inline"
                                       onsubmit="return confirm('Bạn có chắc muốn xóa dự án này?')">
@@ -287,7 +278,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                     </button>
-                                </form>
+                                </form> --}}
                             </div>
                         </td>
                     </tr>
@@ -299,13 +290,6 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                 </svg>
                                 <p class="text-gray-500 mb-4">Không có dự án nào</p>
-                                <a href="{{ route('admin.projects.create') }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    Thêm dự án đầu tiên
-                                </a>
                             </div>
                         </td>
                     </tr>

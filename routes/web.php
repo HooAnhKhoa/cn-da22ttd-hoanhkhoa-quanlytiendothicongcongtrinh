@@ -94,6 +94,16 @@ Route::middleware(['auth', 'client'])->prefix('client')->name('client.')->group(
     // Dashboard
     Route::get('/dashboard', [ClientDashboardController::class, 'index'])->name('dashboard');
 
+        // Routes chung cho nhiều role - SỬA LẠI PHẦN NÀY
+    Route::middleware(['role:contractor,owner,engineer'])->group(function () {
+        // Sửa tên route từ 'projects.show' thành 'client.projects.show' và 'client.projects.index'
+        Route::get('/projects', [ClientProjectController::class, 'index'])->name('projects.index');
+        Route::get('/projects/{project}', [ClientProjectController::class, 'show'])->name('projects.show');
+        
+        Route::get('/tasks', [ClientTaskController::class, 'index'])->name('tasks.index');
+        Route::get('/tasks/{task}', [ClientTaskController::class, 'show'])->name('tasks.show');
+    });
+
     Route::middleware(['role:contractor'])->group(function () {
         Route::get('/contracts', [ClientContractController::class, 'index'])->name('contracts.index');
         Route::get('/contracts/{contract}', [ClientContractController::class, 'show'])->name('contracts.show');
@@ -117,14 +127,6 @@ Route::middleware(['auth', 'client'])->prefix('client')->name('client.')->group(
         Route::post('/progress/create', [EngineerProgressController::class, 'store'])->name('engineer.progress.store');
     });
     
-    // Routes chung cho nhiều role
-    Route::middleware(['role:contractor,owner,engineer'])->group(function () {
-        Route::get('/projects', [ClientProjectController::class, 'index'])->name('projects.index');
-        Route::get('/projects/{project}', [ClientProjectController::class, 'show'])->name('projects.show');
-        
-        Route::get('/tasks', [ClientTaskController::class, 'index'])->name('tasks.index');
-        Route::get('/tasks/{task}', [ClientTaskController::class, 'show'])->name('tasks.show');
-    });
     Route::middleware(['role:contractor,owner'])->group(function () {
         Route::get('/contracts', [ClientContractController::class, 'index'])->name('contracts.index');
         Route::get('/contracts/{contract}', [ClientContractController::class, 'show'])->name('contracts.show');

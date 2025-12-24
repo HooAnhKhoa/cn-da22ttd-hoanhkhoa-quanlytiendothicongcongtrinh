@@ -49,10 +49,10 @@ class ProjectController extends Controller
 
         $projects = $query->paginate(12)->withQueryString();
 
-        return view('admin.projects.index', compact('projects'));
+        return view('client.projects.index', compact('projects'));
     }
 
-    /**
+    /** 
      * Show the form for creating a new resource.
      */
     public function create()
@@ -71,9 +71,37 @@ class ProjectController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Project $project)
     {
-        //
+        $user = Auth::user();
+
+        // 1. Kiểm tra Quyền hạn (Authorization)
+        // Chỉ cho phép xem nếu User là Chủ đầu tư, Nhà thầu, hoặc Kỹ sư của dự án đó
+        if ($project->owner_id !== $user->id && 
+            $project->contractor_id !== $user->id && 
+            $project->engineer_id !== $user->id) {
+            abort(403, 'Bạn không có quyền truy cập vào dự án này.');
+        }
+
+        // 2. Eager Loading (Nạp sẵn dữ liệu quan hệ)
+        // Dựa trên các biến được gọi trong View show.blade.php
+        $project->load([
+            'owner',                // Để hiển thị thông tin Chủ đầu tư
+            'contractor',           // Để hiển thị thông tin Nhà thầu
+            'engineer',             // Để hiển thị thông tin Kỹ sư
+            'sites' => function($query) {
+                // Sắp xếp công trường (tuỳ chọn)
+                $query->orderBy('created_at', 'desc');
+            },
+            'sites.tasks',          // Cần load tasks trong site để tính toán Progress bar
+            'milestones',           // Để đếm số lượng mốc quan trọng
+            'contracts.contractor', // Để hiển thị tên nhà thầu trong tab Hợp đồng
+            'documents',            // Để hiển thị danh sách tài liệu
+        ]);
+
+        // 3. Trả về View
+        // Lưu ý: View bạn gửi nằm ở folder 'client.projects.show' (dựa theo logic folder index)
+        return view('client.projects.show', compact('project'));
     }
 
     /**
