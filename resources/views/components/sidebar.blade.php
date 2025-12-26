@@ -3,19 +3,20 @@
     <nav class="p-4">
         <ul class="space-y-1">
             <!-- Dashboard -->
-            <li>
-                <a href="{{ route('home') }}"
-                    class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
-                    {{ request()->routeIs('home') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
-                    <div class="w-8 h-8 flex items-center justify-center">
-                        <i class="fas fa-tachometer-alt text-sm {{ request()->routeIs('home') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
-                    </div>
-                    <span class="text-sm font-semibold">Dashboard</span>
-                </a>
-            </li>
+      
             
             <!-- Quản lý dự án -->
             @if(auth()->user()->user_type === 'admin')
+                <li>
+                    <a href="{{ route('home') }}"
+                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                        {{ request()->routeIs('home') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-tachometer-alt text-sm {{ request()->routeIs('home') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                        </div>
+                        <span class="text-sm font-semibold">Dashboard</span>
+                    </a>
+                </li>
                 <li class="mt-8 mb-3">
                     <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Quản lý dự án</p>
                 </li>
@@ -115,7 +116,17 @@
                     </a>
                 </li>
                 
-            @elseif(in_array(auth()->user()->user_type, ['client', 'owner', 'contractor', 'engineer']))                <!-- Menu dành cho Client -->
+            @elseif(in_array(auth()->user()->user_type, ['client', 'owner', 'contractor', 'engineer']))     
+                <li>
+                    <a href="{{ route('client.dashboard') }}"
+                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                        {{ request()->routeIs('home') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="fas fa-tachometer-alt text-sm {{ request()->routeIs('home') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                        </div>
+                        <span class="text-sm font-semibold">Dashboard</span>
+                    </a>
+                </li>           <!-- Menu dành cho Client -->
                 <li class="mt-8 mb-3">
                     <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Dự án của tôi</p>
                 </li>

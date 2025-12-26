@@ -8,13 +8,13 @@
     <div class="mb-8">
         <div class="flex justify-between items-start">
             <div>
-                <nav class="mb-4">
-                    <a href="{{ route('client.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 transition-colors">
-                        <i class="fas fa-arrow-left mr-2"></i>Quay lại
-                    </a>
-                </nav>
                 <h1 class="text-3xl font-bold text-gray-800">Lịch sử Thanh toán</h1>
                 <p class="text-gray-600 mt-2">Danh sách các khoản thanh toán trong hợp đồng của bạn</p>
+            </div>
+            <div class="mt-10">
+                <a href="{{ route('client.payments.create') }}" class="inline-flex items-center px-5 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-lg">
+                    <i class="fas fa-plus-circle mr-2"></i> Tạo thanh toán mới
+                </a>
             </div>
         </div>
     </div>

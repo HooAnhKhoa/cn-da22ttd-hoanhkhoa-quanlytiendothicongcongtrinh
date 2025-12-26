@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('phone')->nullable();
             $table->enum('user_type', ['owner', 'contractor', 'engineer', 'admin'])->default('owner');
+            $table->json('role_change_requests')->nullable();
             $table->enum('status', ['active', 'inactive', 'locked'])->default('active');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

@@ -236,6 +236,10 @@
             <i class="fas fa-history mr-2"></i>Lịch sử thanh toán
             <span class="text-sm font-normal text-gray-500 ml-2">({{ $contract->payments->count() }} giao dịch)</span>
         </h2>
+        <a href="{{ route('client.payments.create', ['contract_id' => $contract->id]) }}" 
+           class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors shadow-sm">
+            <i class="fas fa-plus mr-2"></i> Thêm thanh toán
+        </a>
     </div>
     
     <div class="p-6">
