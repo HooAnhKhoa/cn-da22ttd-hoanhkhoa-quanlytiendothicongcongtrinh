@@ -63,7 +63,7 @@
             <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="p-6 border-b border-gray-50 flex justify-between items-center">
                     <h2 class="text-lg font-bold text-gray-800">Dự án gần đây</h2>
-                    <a href="{{ route('client.owner.projects.index') }}" class="text-sm font-bold text-blue-600 hover:text-blue-800">Xem tất cả</a>
+                    <a href="{{ route('client.projects.index') }}" class="text-sm font-bold text-blue-600 hover:text-blue-800">Xem tất cả</a>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -94,7 +94,7 @@
                                     </span>
                                 </td>
                                 <td class="p-4">
-                                    <a href="{{ route('client.owner.projects.show', $project->id) }}" class="text-blue-600 hover:underline font-bold text-sm">Chi tiết</a>
+                                    <a href="{{ route('client.projects.show', $project->id) }}" class="text-blue-600 hover:underline font-bold text-sm">Chi tiết</a>
                                 </td>
                             </tr>
                             @endforeach

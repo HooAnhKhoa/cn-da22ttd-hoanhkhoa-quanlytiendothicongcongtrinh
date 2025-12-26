@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\RoleChangeRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -142,30 +143,53 @@ class UserController extends Controller
         return back()->with('success', "Đã cập nhật trạng thái của {$user->username} thành " . ucfirst($request->status));
     }
 
-    public function approveRoleRequest(Request $request, User $user, string $requestId)
+    /**
+     * Chấp nhận yêu cầu đổi vai trò
+     */
+    public function approveRoleRequest(Request $request, User $user, $requestId)
     {
-        // Gọi hàm xử lý trong Model User
-        $user->processRoleChangeRequest(
-            $requestId, 
-            'approved', 
-            'Được duyệt nhanh từ trang chi tiết bởi Admin', // Ghi chú tự động
-            auth()->id()
-        );
+        // Tìm request trong bảng RoleChangeRequest
+        $roleRequest = RoleChangeRequest::findOrFail($requestId);
 
-        return back()->with('success', 'Đã chấp nhận yêu cầu đổi vai trò thành công.');
+        // Kiểm tra logic
+        if ($roleRequest->user_id != $user->id) {
+            return back()->with('error', 'Yêu cầu không khớp với người dùng này.');
+        }
+        if ($roleRequest->status !== 'pending') {
+            return back()->with('error', 'Yêu cầu này đã được xử lý trước đó.');
+        }
+
+        // 1. Cập nhật trạng thái yêu cầu
+        $roleRequest->update([
+            'status' => 'approved',
+            'processed_by' => auth()->id(),
+            'processed_at' => now(),
+            'admin_notes' => 'Được duyệt nhanh từ trang chi tiết người dùng.'
+        ]);
+
+        // 2. Cập nhật User Type cho người dùng
+        $user->update(['user_type' => $roleRequest->requested_role]);
+
+        return back()->with('success', 'Đã duyệt yêu cầu và cập nhật vai trò người dùng.');
     }
 
     /**
      * Từ chối yêu cầu đổi vai trò
      */
-    public function rejectRoleRequest(Request $request, User $user, string $requestId)
+    public function rejectRoleRequest(Request $request, User $user, $requestId)
     {
-        $user->processRoleChangeRequest(
-            $requestId, 
-            'rejected', 
-            'Đã từ chối yêu cầu.', 
-            auth()->id()
-        );
+        $roleRequest = RoleChangeRequest::findOrFail($requestId);
+
+        if ($roleRequest->user_id != $user->id) {
+            return back()->with('error', 'Yêu cầu không hợp lệ.');
+        }
+
+        $roleRequest->update([
+            'status' => 'rejected',
+            'processed_by' => auth()->id(),
+            'processed_at' => now(),
+            'admin_notes' => 'Đã từ chối từ trang quản lý người dùng.'
+        ]);
 
         return back()->with('success', 'Đã từ chối yêu cầu đổi vai trò.');
     }

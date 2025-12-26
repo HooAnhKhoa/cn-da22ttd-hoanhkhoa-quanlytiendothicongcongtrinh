@@ -67,7 +67,7 @@
                     @csrf
                     
                     <div class="input-group sm:col-span-2">
-                        <label for="username" class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-2.5 ml-1">Tên đăng nhập</label>
+                        <label for="username" class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-2.5 ml-1">Họ và Tên</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none transition-all duration-300 input-icon text-slate-400">
                                 <i class="fas fa-user text-sm"></i>

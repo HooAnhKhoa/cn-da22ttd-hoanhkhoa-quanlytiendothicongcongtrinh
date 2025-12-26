@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\RoleChangeRequest;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
@@ -103,107 +104,21 @@ class User extends Authenticatable
     {
         return $this->belongsTo(User::class, 'owner_id');
     }
-    
+
+    public function roleChangeRequests()
+    {
+        return $this->hasMany(RoleChangeRequest::class)->latest();
+    }
+
+    // Kiểm tra có yêu cầu đang chờ (dùng cho logic ẩn hiện nút)
     public function hasPendingRoleRequest()
     {
-        if (!$this->role_change_requests) {
-            return false;
-        }
-
-        return collect($this->role_change_requests)
-            ->contains('status', 'pending');
+        return $this->roleChangeRequests()->where('status', 'pending')->exists();
     }
-
-    /**
-     * Lấy tất cả yêu cầu đổi role
-     */
-    public function getRoleChangeRequestsAttribute($value)
-    {
-        return $value ? json_decode($value, true) : [];
-    }
-
-    /**
-     * Lấy yêu cầu đổi role gần nhất
-     */
-    public function getLatestRoleChangeRequest()
-    {
-        if (!$this->role_change_requests) {
-            return null;
-        }
-
-        return collect($this->role_change_requests)
-            ->sortByDesc('created_at')
-            ->first();
-    }
-
-    /**
-     * Thêm yêu cầu đổi role mới
-     */
-    public function addRoleChangeRequest(array $data)
-    {
-        $requests = $this->role_change_requests ?? [];
-        
-        $newRequest = [
-            'id' => uniqid(),
-            'requested_role' => $data['requested_role'],
-            'reason' => $data['reason'],
-            'supporting_documents' => $data['supporting_documents'] ?? [],
-            'status' => 'pending',
-            'created_at' => now()->toDateTimeString(),
-            'admin_notes' => null,
-            'processed_at' => null,
-            'processed_by' => null
-        ];
-
-        $requests[] = $newRequest;
-        
-        $this->update([
-            'role_change_requests' => $requests
-        ]);
-
-        return $newRequest;
-    }
-
-    /**
-     * Xử lý yêu cầu đổi role
-     */
-    public function processRoleChangeRequest($requestId, $status, $adminNotes = null, $processedBy = null)
-    {
-        $requests = $this->role_change_requests;
-        
-        foreach ($requests as &$request) {
-            if ($request['id'] === $requestId && $request['status'] === 'pending') {
-                $request['status'] = $status;
-                $request['admin_notes'] = $adminNotes;
-                $request['processed_at'] = now()->toDateTimeString();
-                $request['processed_by'] = $processedBy;
-                
-                // Nếu được chấp nhận, cập nhật user_type
-                if ($status === 'approved') {
-                    $this->update([
-                        'user_type' => $request['requested_role']
-                    ]);
-                }
-                
-                break;
-            }
-        }
-        
-        $this->update([
-            'role_change_requests' => $requests
-        ]);
-        
-        return true;
-    }
-
-    /**
-     * Lấy danh sách yêu cầu đổi role (để hiển thị trong view)
-     */
+    
+    // Hàm hỗ trợ lấy danh sách cho View (để tương thích logic cũ)
     public function getRoleChangeRequestsList()
     {
-        return collect($this->role_change_requests)
-            ->sortByDesc('created_at')
-            ->values()
-            ->all();
+        return $this->roleChangeRequests;
     }
 }

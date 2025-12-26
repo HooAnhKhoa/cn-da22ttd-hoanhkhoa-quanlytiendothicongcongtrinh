@@ -134,6 +134,7 @@ class ProfileController extends Controller
     /**
      * Gửi yêu cầu đổi vai trò
      */
+
     public function requestRoleChange(Request $request)
     {
         try {
@@ -141,23 +142,25 @@ class ProfileController extends Controller
                 'requested_role' => 'required|in:owner,contractor,engineer,admin',
                 'reason' => 'required|min:10|max:1000',
             ]);
-
+        
             $user = Auth::user();
-
-            if (method_exists($user, 'hasPendingRoleRequest') && $user->hasPendingRoleRequest()) {
+        
+            if ($user->hasPendingRoleRequest()) {
                 return response()->json(['success' => false, 'message' => 'Bạn đã có yêu cầu đang chờ duyệt'], 400);
             }
-
-            // Logic lưu yêu cầu (Tùy thuộc vào model User của bạn)
-            // Giả sử bạn lưu vào bảng role_change_requests hoặc JSON
-            // $user->roleChangeRequests()->create([...]); 
-            
-            // Tạm thời trả về thành công để test giao diện
+        
+            // --- SỬA ĐỔI: Tạo record mới vào bảng riêng ---
+            $user->roleChangeRequests()->create([
+                'requested_role' => $request->requested_role,
+                'reason' => $request->reason,
+                'status' => 'pending'
+            ]);
+        
             return response()->json([
                 'success' => true,
                 'message' => 'Yêu cầu đổi vai trò đã được gửi'
             ]);
-
+        
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Lỗi: ' . $e->getMessage()], 500);
         }

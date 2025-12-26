@@ -52,7 +52,7 @@
                 </div>
             </div>
         </div>
-
+        
         {{-- Main Content Area --}}
         <div class="bg-white rounded-xl shadow-sm mb-8">
             {{-- Tab Navigation --}}
@@ -192,33 +192,44 @@
                             </div>
                             
                             {{-- Role Requests List --}}
-                            @if(count(auth()->user()->getRoleChangeRequestsList()) > 0)
-                            <div class="bg-white rounded-lg border border-gray-200 p-6">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Lịch sử đổi vai trò</h3>
-                                <div class="space-y-3">
-                                    @foreach(auth()->user()->getRoleChangeRequestsList() as $request)
-                                    <div class="border border-gray-200 rounded-lg p-4">
-                                        <div class="flex justify-between items-center mb-2">
-                                            <span class="font-medium capitalize">{{ $request['requested_role'] ?? 'N/A' }}</span>
-                                            <span class="px-2 py-1 text-xs rounded-full 
-                                                @if($request['status'] == 'pending') bg-yellow-100 text-yellow-800
-                                                @elseif($request['status'] == 'approved') bg-green-100 text-green-800
-                                                @else bg-red-100 text-red-800 @endif">
-                                                {{ ucfirst($request['status'] ?? 'unknown') }}
-                                            </span>
+                            @if(auth()->user()->getRoleChangeRequestsList()->count() > 0)
+                                <div class="bg-white rounded-lg border border-gray-200 p-6">
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Lịch sử đổi vai trò</h3>
+                                    <div class="space-y-3">
+                                        @foreach(auth()->user()->getRoleChangeRequestsList() as $request)
+                                        <div class="border border-gray-200 rounded-lg p-4">
+                                            <div class="flex justify-between items-center mb-2">
+                                                {{-- Sửa ['requested_role'] thành ->requested_role --}}
+                                                <span class="font-medium capitalize">{{ $request->requested_role ?? 'N/A' }}</span>
+                                                
+                                                {{-- Sửa ['status'] thành ->status --}}
+                                                <span class="px-2 py-1 text-xs rounded-full 
+                                                    @if($request->status == 'pending') bg-yellow-100 text-yellow-800
+                                                    @elseif($request->status == 'approved') bg-green-100 text-green-800
+                                                    @else bg-red-100 text-red-800 @endif">
+                                                    {{ ucfirst($request->status ?? 'unknown') }}
+                                                </span>
+                                            </div>
+                                            
+                                            {{-- Sửa ['reason'] thành ->reason --}}
+                                            <div class="text-sm text-gray-600">{{ $request->reason ?? 'Không có lý do' }}</div>
+                                            
+                                            {{-- Sửa ['created_at'] thành ->created_at --}}
+                                            <div class="text-xs text-gray-500 mt-2">
+                                                {{ $request->created_at ? $request->created_at->format('d/m/Y H:i') : 'N/A' }}
+                                            </div>
+
+                                            {{-- Sửa ['admin_notes'] thành ->admin_notes --}}
+                                            @if($request->admin_notes)
+                                            <div class="mt-2 text-sm text-gray-700 bg-gray-50 p-2 rounded">
+                                                <span class="font-medium">Phản hồi:</span> {{ $request->admin_notes }}
+                                            </div>
+                                            @endif
                                         </div>
-                                        <div class="text-sm text-gray-600">{{ $request['reason'] ?? 'Không có lý do' }}</div>
-                                        <div class="text-xs text-gray-500 mt-2">{{ isset($request['created_at']) ? \Carbon\Carbon::parse($request['created_at'])->format('d/m/Y H:i') : 'N/A' }}</div>
-                                        @if($request['admin_notes'])
-                                        <div class="mt-2 text-sm text-gray-700 bg-gray-50 p-2 rounded">
-                                            <span class="font-medium">Phản hồi:</span> {{ $request['admin_notes'] }}
-                                        </div>
-                                        @endif
+                                        @endforeach
                                     </div>
-                                    @endforeach
                                 </div>
-                            </div>
-                            @endif
+                                @endif
                         </div>
                     </div>
                 </div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\RoleChangeRequest;
 
 class AdminController extends Controller
 {
@@ -15,39 +16,48 @@ class AdminController extends Controller
 
     public function roleChangeRequests()
     {
-        // Lấy tất cả user có yêu cầu đổi role đang chờ
-        $users = User::whereNotNull('role_change_requests')
-            ->get()
-            ->filter(function ($user) {
-                return $user->hasPendingRoleRequest();
-            });
-
+        // Lấy user có request đang pending
+        $users = User::whereHas('roleChangeRequests', function($q) {
+            $q->where('status', 'pending');
+        })->with(['roleChangeRequests' => function($q) {
+            $q->where('status', 'pending');
+        }])->get();
+    
         return view('admin.role-change-requests', compact('users'));
     }
-
+    
     public function processRoleChangeRequest(Request $request, $userId)
     {
         $request->validate([
-            'request_id' => 'required',
+            'request_id' => 'required|exists:role_change_requests,id',
             'action' => 'required|in:approve,reject',
             'admin_notes' => 'nullable|string|max:500'
         ]);
-
-        $user = User::findOrFail($userId);
+    
+        $roleRequest = RoleChangeRequest::findOrFail($request->request_id);
         
-        // Xử lý yêu cầu
+        // Validation phụ: đảm bảo request thuộc về user
+        if ($roleRequest->user_id != $userId) {
+            return response()->json(['success' => false, 'message' => 'Dữ liệu không khớp'], 400);
+        }
+    
         $status = $request->action === 'approve' ? 'approved' : 'rejected';
-        
-        $user->processRoleChangeRequest(
-            $request->request_id,
-            $status,
-            $request->admin_notes,
-            Auth::id()
-        );
-
+    
+        $roleRequest->update([
+            'status' => $status,
+            'admin_notes' => $request->admin_notes,
+            'processed_by' => Auth::id(),
+            'processed_at' => now(),
+        ]);
+    
+        if ($status === 'approved') {
+            // Cập nhật role cho user
+            User::where('id', $userId)->update(['user_type' => $roleRequest->requested_role]);
+        }
+    
         return response()->json([
-            'success' => true,
-            'message' => 'Yêu cầu đã được xử lý thành công!'
+            'success' => true, 
+            'message' => 'Đã xử lý yêu cầu thành công!'
         ]);
     }
 }

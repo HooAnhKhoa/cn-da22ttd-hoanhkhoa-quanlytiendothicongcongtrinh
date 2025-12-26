@@ -116,20 +116,25 @@
                     </a>
                 </li>
                 
-            @elseif(in_array(auth()->user()->user_type, ['client', 'owner', 'contractor', 'engineer']))     
+            @elseif(in_array(auth()->user()->user_type, ['client', 'owner', 'contractor', 'engineer']))
+                
+                {{-- 1. DASHBOARD (Chung) --}}
                 <li>
                     <a href="{{ route('client.dashboard') }}"
                         class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
-                        {{ request()->routeIs('home') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        {{ request()->routeIs('client.dashboard') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
                         <div class="w-8 h-8 flex items-center justify-center">
-                            <i class="fas fa-tachometer-alt text-sm {{ request()->routeIs('home') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                            <i class="fas fa-tachometer-alt text-sm {{ request()->routeIs('client.dashboard') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
                         </div>
                         <span class="text-sm font-semibold">Dashboard</span>
                     </a>
-                </li>           <!-- Menu dành cho Client -->
-                <li class="mt-8 mb-3">
-                    <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Dự án của tôi</p>
                 </li>
+
+                <li class="mt-8 mb-3">
+                    <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Quản lý dự án</p>
+                </li>
+
+                {{-- 2. DỰ ÁN (Chung cho tất cả) --}}
                 <li>
                     <a href="{{ route('client.projects.index') }}"
                         class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
@@ -140,36 +145,56 @@
                         <span class="text-sm font-semibold">Dự án</span>
                     </a>
                 </li>
+
+                {{-- 3. CÔNG VIỆC (Dành riêng cho ENGINEER) --}}
+                @if(auth()->user()->user_type === 'engineer')
                 <li>
-                    <a href="{{ route('client.progress_updates.index') }}"
+                    <a href="{{ route('client.sites.index') }}"
                         class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
-                        {{ request()->routeIs('client.progress.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        {{ request()->routeIs('client.sites.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
                         <div class="w-8 h-8 flex items-center justify-center">
-                            <i class="fas fa-chart-line text-sm {{ request()->routeIs('client.progress_updates.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                            <i class="fas fa-map-marker-alt text-sm {{ request()->routeIs('client.sites.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
                         </div>
-                        <span class="text-sm font-semibold">Tiến độ</span>
+                        <span class="text-sm font-semibold">Công trường</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('client.contracts.index') }}"
+                    <a href="{{ route('client.tasks.index') }}"
                         class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
-                        {{ request()->routeIs('client.contracts.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                        {{ request()->routeIs('client.tasks.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
                         <div class="w-8 h-8 flex items-center justify-center">
-                            <i class="fas fa-file-contract text-sm {{ request()->routeIs('client.contracts.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                            <i class="fas fa-tasks text-sm {{ request()->routeIs('client.tasks.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
                         </div>
-                        <span class="text-sm font-semibold">Hợp đồng</span>
+                        <span class="text-sm font-semibold">Công việc của tôi</span>
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('client.payments.index') }}"
-                        class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
-                        {{ request()->routeIs('client.payments.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
-                        <div class="w-8 h-8 flex items-center justify-center">
-                            <i class="fas fa-money-bill-wave text-sm {{ request()->routeIs('client.payments.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
-                        </div>
-                        <span class="text-sm font-semibold">Thanh toán</span>
-                    </a>
-                </li>
+
+                @endif
+
+                {{-- 4. TIẾN ĐỘ, HỢP ĐỒNG, THANH TOÁN (Chỉ CONTRACTOR & OWNER) --}}
+                @if(in_array(auth()->user()->user_type, ['contractor', 'owner']))
+                    <li>
+                        <a href="{{ route('client.contracts.index') }}"
+                            class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                            {{ request()->routeIs('client.contracts.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                            <div class="w-8 h-8 flex items-center justify-center">
+                                <i class="fas fa-file-contract text-sm {{ request()->routeIs('client.contracts.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                            </div>
+                            <span class="text-sm font-semibold">Hợp đồng</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('client.payments.index') }}"
+                            class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
+                            {{ request()->routeIs('client.payments.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
+                            <div class="w-8 h-8 flex items-center justify-center">
+                                <i class="fas fa-money-bill-wave text-sm {{ request()->routeIs('client.payments.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                            </div>
+                            <span class="text-sm font-semibold">Thanh toán</span>
+                        </a>
+                    </li>
+                @endif
+
             @endif
             
             <!-- Profile & Settings -->

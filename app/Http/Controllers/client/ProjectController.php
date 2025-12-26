@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Client;
 
+use App\Models\User;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -75,19 +76,40 @@ class ProjectController extends Controller
 
     /** * Show the form for creating a new resource.
      */
+
     public function create()
     {
-        //
+        // Lấy danh sách Owner để Nhà thầu chọn (Khách hàng)
+        $owners = User::where('user_type', 'owner')->where('status', 'active')->get();
+        
+        // Lấy danh sách Engineer để Nhà thầu chọn (Tư vấn giám sát - nếu có)
+        $engineers = User::where('user_type', 'engineer')->where('status', 'active')->get();
+
+        return view('client.projects.create', compact('owners', 'engineers'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
-    }
+        $validated = $request->validate([
+            'project_name' => 'required|string|max:255',
+            'location' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'owner_id' => 'required|exists:users,id',     // Bắt buộc chọn chủ đầu tư
+            'engineer_id' => 'nullable|exists:users,id',  // Kỹ sư có thể để trống
+        ]);
 
+        // Gán contractor_id là người đang đăng nhập
+        $validated['contractor_id'] = auth()->id();
+        $validated['status'] = 'draft'; // Mặc định là nháp
+
+        // Tạo dự án
+        Project::create($validated);
+
+        return redirect()->route('client.projects.index')
+            ->with('success', 'Dự án mới đã được tạo thành công!');
+    }
     /**
      * Display the specified resource.
      */

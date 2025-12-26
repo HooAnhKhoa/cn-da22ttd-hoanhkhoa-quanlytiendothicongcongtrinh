@@ -494,12 +494,12 @@
                                         @endforeach
                                     </div>
                                     
-                                    <div class="mt-4 flex justify-end">
+                                    {{-- <div class="mt-4 flex justify-end">
                                         <a href="{{ route('client.progress_updates.index', $site) }}" 
                                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                                             <i class="fas fa-external-link-alt mr-2"></i>Xem chi tiết công trường
                                         </a>
-                                    </div>
+                                    </div> --}}
                                 @else
                                     <div class="text-center py-8">
                                         <div class="inline-flex items-center justify-center w-14 h-14 bg-gray-100 rounded-full mb-3">
@@ -581,6 +581,12 @@
                     </div>
                     <h3 class="text-lg font-medium text-gray-700 mb-2">Chưa có hợp đồng nào</h3>
                     <p class="text-gray-500 mb-6">Dự án chưa được thiết lập hợp đồng</p>
+                    @if(auth()->user()->user_type === 'contractor')
+                        <a href="{{ route('client.contracts.create', ['project_id' => $project->id]) }}" 
+                        class="inline-flex items-center px-6 py-3 bg-green-600 border border-transparent rounded-lg font-semibold text-white hover:bg-green-700 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Tạo hợp đồng
+                        </a>
+                    @endif
                 </div>
             @endif
         </div>

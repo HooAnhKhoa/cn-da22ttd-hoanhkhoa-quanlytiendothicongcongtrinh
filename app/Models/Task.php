@@ -80,4 +80,14 @@ class Task extends Model
     {
         return $this->hasMany(Payment::class);
     }
+    public function assignedEngineer()
+    {
+        return $this->belongsTo(User::class, 'assigned_engineer_id');
+    }
+
+    // Thêm relationship với người approved nếu cần
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
 }

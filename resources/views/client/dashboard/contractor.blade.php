@@ -54,7 +54,7 @@
             <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="p-6 border-b border-gray-50 flex justify-between items-center">
                     <h2 class="text-lg font-bold text-gray-800">Nhật ký thi công mới nhất</h2>
-                    <a href="{{ route('client.progress.index') }}" class="text-sm font-bold text-blue-600 hover:text-blue-800">Xem tất cả</a>
+                    {{-- <a href="{{ route('client.progress.index') }}" class="text-sm font-bold text-blue-600 hover:text-blue-800">Xem tất cả</a> --}}
                 </div>
                 <div class="p-6">
                     <div class="flow-root">

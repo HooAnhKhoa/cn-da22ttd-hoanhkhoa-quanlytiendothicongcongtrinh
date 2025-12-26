@@ -166,4 +166,109 @@ class ContractController extends Controller
 
         return view('client.contracts.show', compact('contract', 'project', 'totalPaid', 'remaining', 'progress'));
     }
+    public function create(Request $request)
+    {
+        $user = Auth::user();
+
+        // 1. Lấy danh sách dự án của Nhà thầu này
+        // Eager load owner & contractor để dùng cho logic JS 'data-contractor', 'data-owner' trong View
+        $projects = Project::where('contractor_id', $user->id)
+            ->with(['owner', 'contractor'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // 2. Danh sách Nhà thầu: Chỉ truyền chính user hiện tại (để view hiển thị duy nhất 1 lựa chọn)
+        $contractors = collect([$user]);
+
+        // 3. Danh sách Chủ đầu tư: Lấy tất cả active owner (để JS tự động select đúng người theo dự án)
+        $owners = User::where('user_type', 'owner')->where('status', 'active')->get();
+
+        // 4. Các Enum trạng thái & Thanh toán (Khớp với View)
+        $statuses = [
+            'draft' => 'Bản nháp',
+            'pending_signature' => 'Chờ ký',
+            // Client không được phép chọn 'active' ngay lập tức
+        ];
+
+        $paymentStatuses = [
+            'unpaid' => 'Chưa thanh toán',
+            'partially_paid' => 'Thanh toán một phần',
+            'fully_paid' => 'Đã tất toán',
+        ];
+
+        // 5. Số hợp đồng tự động
+        $autoContractNumber = 'HĐ-' . date('Ymd') . '-' . rand(100, 999);
+        
+        // 6. Xử lý logic nếu tạo từ trang chi tiết dự án
+        $selectedProjectId = $request->get('project_id');
+
+        return view('client.contracts.create', compact(
+            'projects',
+            'contractors',
+            'owners',
+            'statuses',
+            'paymentStatuses',
+            'autoContractNumber',
+            'selectedProjectId'
+        ));
+    }
+
+    /**
+     * Lưu hợp đồng (Xử lý form submit từ View)
+     */
+    public function store(Request $request)
+    {
+        $user = Auth::user();
+
+        // 1. Validate dữ liệu khớp với name="" trong View
+        $validated = $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'contract_number' => 'nullable|string|max:50|unique:contracts,contract_number',
+            'contract_name' => 'nullable|string|max:255',
+            'contractor_id' => 'required|exists:users,id', // Sẽ check logic bên dưới
+            'owner_id' => 'required|exists:users,id',
+            'contract_value' => 'required|numeric|min:0',
+            'advance_payment' => 'nullable|numeric|min:0',
+            'payment_status' => 'required|in:unpaid,partially_paid,fully_paid',
+            'signed_date' => 'required|date',
+            'due_date' => 'required|date|after_or_equal:signed_date',
+            'status' => 'required|in:draft,pending_signature', // Chỉ cho phép 2 trạng thái này
+            'description' => 'nullable|string',
+            'terms' => 'nullable|string',
+        ], [
+            'project_id.required' => 'Vui lòng chọn dự án.',
+            'status.in' => 'Trạng thái không hợp lệ.',
+            'contractor_id.required' => 'Thông tin nhà thầu bị thiếu.',
+        ]);
+
+        // 2. LOGIC BẢO MẬT QUAN TRỌNG
+        // Đảm bảo dự án thuộc về Nhà thầu đang đăng nhập
+        $project = Project::where('id', $request->project_id)
+            ->where('contractor_id', $user->id)
+            ->firstOrFail();
+
+        // Đảm bảo contractor_id gửi lên chính là user đang đăng nhập (chống hack form)
+        if ($validated['contractor_id'] != $user->id) {
+            return back()->withInput()->withErrors(['contractor_id' => 'Bạn chỉ có thể tạo hợp đồng cho chính mình.']);
+        }
+        
+        // Đảm bảo owner_id khớp với chủ đầu tư của dự án
+        if ($validated['owner_id'] != $project->owner_id) {
+             return back()->withInput()->withErrors(['owner_id' => 'Chủ đầu tư không khớp với dự án đã chọn.']);
+        }
+
+        // 3. Xử lý dữ liệu bổ sung
+        if (empty($validated['contract_number'])) {
+            $validated['contract_number'] = 'HĐ-' . date('Ymd') . '-' . time();
+        }
+        if (!isset($validated['advance_payment'])) {
+            $validated['advance_payment'] = 0;
+        }
+
+        // 4. Tạo Contract
+        Contract::create($validated);
+
+        return redirect()->route('client.contracts.index')
+            ->with('success', 'Hợp đồng mới đã được tạo thành công!');
+    }
 }
