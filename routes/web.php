@@ -15,8 +15,8 @@ use App\Http\Controllers\Client\OwnerContractController;
 use App\Http\Controllers\Client\EngineerProgressController;
 use App\Http\Controllers\Admin\SiteController as AdminSiteController;
 use App\Http\Controllers\Admin\TaskController as AdminTaskController;
-use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\IssueController as AdminIssueController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 
 // ... (Import các Admin controller khác)
 
@@ -85,12 +85,18 @@ Route::controller(AuthController::class)->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [HomeController::class, 'adminDashboard'])->name('dashboard');
-
     // Quản lý chính (Full CRUD)
     Route::get('/admin/role-change-requests', [AdminController::class, 'roleChangeRequests'])
         ->name('admin.role-change-requests');
     Route::post('/admin/role-change-requests/{userId}/process', [AdminController::class, 'processRoleChangeRequest'])
         ->name('admin.role-change-requests.process');
+
+    Route::post('/users/{user}/role-requests/{requestId}/approve', [AdminUserController::class, 'approveRoleRequest'])
+        ->name('users.approve-role-request');
+    Route::post('/users/{user}/role-requests/{requestId}/reject', [AdminUserController::class, 'rejectRoleRequest'])
+        ->name('users.reject-role-request');
+    Route::patch('/users/{user}/status', [AdminUserController::class, 'updateStatus'])
+        ->name('users.update-status');
     Route::resource('projects', AdminProjectController::class);
     Route::resource('sites', AdminSiteController::class);
     Route::resource('tasks', AdminTaskController::class);
