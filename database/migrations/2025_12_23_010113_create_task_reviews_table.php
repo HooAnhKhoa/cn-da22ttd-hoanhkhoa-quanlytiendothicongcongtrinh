@@ -13,37 +13,29 @@ return new class extends Migration
     {
         Schema::create('task_reviews', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('task_id')->constrained('tasks');
-            $table->foreignId('reviewer_id')->constrained('users')->comment('Người đánh giá (owner)');
+            $table->foreignId('task_id')->constrained('tasks')->onDelete('cascade');
+            $table->foreignId('reviewer_id')->constrained('users'); // Người đánh giá
             
-            // Đánh giá
-            $table->tinyInteger('rating')->nullable()->comment('Điểm từ 1-5');
-            $table->text('comments')->nullable();
-            $table->text('improvement_suggestions')->nullable()->comment('Gợi ý cải thiện');
+            // Thông tin đánh giá cơ bản
+            $table->unsignedTinyInteger('rating')->comment('Điểm đánh giá 1-5');
+            $table->text('comments')->nullable(); // Lưu ý: 'comments' số nhiều để khớp với Seeder
+            $table->text('improvement_suggestions')->nullable();
             
             // Kết quả đánh giá
-            $table->enum('result', ['approved', 'rejected', 'needs_revision'])->default('needs_revision');
+            $table->string('result')->nullable(); // Vd: passed, needs_revision, failed
             
-            // Thông tin revision
+            // Xử lý làm lại (Rework)
             $table->boolean('requires_rework')->default(false);
             $table->text('rework_instructions')->nullable();
-            $table->date('rework_deadline')->nullable();
+            $table->dateTime('rework_deadline')->nullable();
             
-            // Thông tin phê duyệt
+            // Trạng thái
             $table->boolean('is_final')->default(false);
             $table->timestamp('reviewed_at')->nullable();
             $table->timestamp('approved_at')->nullable();
             
-            // File đính kèm (hình ảnh, tài liệu đánh giá)
-            $table->json('review_files')->nullable();
-            
             $table->timestamps();
             $table->softDeletes();
-            
-            // Indexes
-            $table->index(['task_id', 'result']);
-            $table->index(['reviewer_id', 'result']);
-            $table->index('requires_rework');
         });
     }
 

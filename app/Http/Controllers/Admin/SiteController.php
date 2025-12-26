@@ -86,7 +86,7 @@ class SiteController extends Controller
 
         Site::create($validated);
 
-        return redirect()->route('sites.index')
+        return redirect()->route('admin.sites.index')
             ->with('success', 'Công trường đã được tạo thành công!');
     }
 

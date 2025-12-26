@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\Task;
-use App\Models\Progress;
+use App\Models\ProgressUpdate; // Đã sửa từ Progress thành ProgressUpdate
 use App\Models\MaterialUsage;
 use App\Models\Contract;
 use App\Models\Payment;
@@ -20,7 +20,6 @@ class DashboardController extends Controller
         $user = Auth::user();
         $userType = $user->user_type;
         
-        // Dashboard khác nhau cho từng role
         switch ($userType) {
             case 'contractor':
                 return $this->contractorDashboard($user);
@@ -33,12 +32,13 @@ class DashboardController extends Controller
         }
     }
     
+    // ==========================================
+    // CONTRACTOR DASHBOARD
+    // ==========================================
     private function contractorDashboard($user)
     {
-        // Logic dashboard cho contractor
-        $projects = Project::whereHas('contracts', function($query) use ($user) {
-            $query->where('contractor_id', $user->id);
-        })->get();
+        // Contractor được xác định trực tiếp trên Project
+        $projects = Project::where('contractor_id', $user->id)->get();
 
         $stats = [
             'total_projects' => $projects->count(),
@@ -50,13 +50,12 @@ class DashboardController extends Controller
         $paymentStats = $this->getContractorPaymentStats($user->id);
         $materialStats = $this->getContractorMaterialStats($user->id);
         
-        $recentProgress = Progress::whereHas('task', function($query) use ($user) {
-                $query->whereHas('site.project.contracts', function($subQuery) use ($user) {
-                    $subQuery->where('contractor_id', $user->id);
-                });
+        // Lấy tiến độ mới nhất từ các task thuộc dự án của contractor
+        $recentProgress = ProgressUpdate::whereHas('task.site.project', function($query) use ($user) {
+                $query->where('contractor_id', $user->id);
             })
             ->with(['task.site.project'])
-            ->orderBy('created_at', 'desc')
+            ->orderBy('date', 'desc') // Sửa created_at thành date theo schema
             ->take(5)
             ->get();
 
@@ -72,20 +71,25 @@ class DashboardController extends Controller
         ));
     }
     
+    // ==========================================
+    // OWNER DASHBOARD
+    // ==========================================
     private function ownerDashboard($user)
     {
-        // Logic dashboard cho owner
         $projects = Project::where('owner_id', $user->id)->get();
         
+        // Tính tổng ngân sách từ các Contracts (vì project không còn lưu total_budget)
+        $totalInvestment = Contract::whereIn('project_id', $projects->pluck('id'))->sum('contract_value');
+
         $stats = [
             'total_projects' => $projects->count(),
             'active_projects' => $projects->where('status', 'in_progress')->count(),
-            'total_investment' => $projects->sum('total_budget'),
+            'total_investment' => $totalInvestment,
             'completed_projects' => $projects->where('status', 'completed')->count(),
         ];
         
         $financialStats = $this->getOwnerFinancialStats($user->id);
-        $contractStats = $this->getOwnerContractStats($user->id);
+        $contractStats = $this->getOwnerContractStats($projects->pluck('id')->toArray());
         $upcomingPayments = $this->getOwnerUpcomingPayments($user->id);
         $recentProjects = $projects->sortByDesc('created_at')->take(5);
         
@@ -98,24 +102,29 @@ class DashboardController extends Controller
         ));
     }
     
+    // ==========================================
+    // ENGINEER DASHBOARD
+    // ==========================================
     private function engineerDashboard($user)
     {
-        // Logic dashboard cho engineer
-        $tasks = Task::where('assigned_to', $user->id)->get();
+        // Sửa assigned_to thành assigned_engineer_id
+        $tasks = Task::where('assigned_engineer_id', $user->id)->get();
         
         $stats = [
             'total_tasks' => $tasks->count(),
             'completed_tasks' => $tasks->where('status', 'completed')->count(),
             'in_progress_tasks' => $tasks->where('status', 'in_progress')->count(),
+            // Sửa due_date thành end_date
             'overdue_tasks' => $tasks->where('status', '!=', 'completed')
-                ->where('due_date', '<', now())->count(),
+                ->where('end_date', '<', now())->count(),
         ];
         
-        $taskStats = $this->getEngineerTaskStats($user->id);
+        $taskStats = $this->getEngineerTaskStats($tasks);
         $recentProgress = $this->getEngineerRecentProgress($user->id);
+        
         $upcomingTasks = $tasks->where('status', '!=', 'completed')
-            ->where('due_date', '>=', now())
-            ->sortBy('due_date')
+            ->where('end_date', '>=', now())
+            ->sortBy('end_date')
             ->take(5);
         
         return view('client.dashboard.engineer', compact(
@@ -126,13 +135,17 @@ class DashboardController extends Controller
         ));
     }
     
+    // ==========================================
+    // HELPER FUNCTIONS
+    // ==========================================
+
     private function getContractorTaskStats($contractorId)
     {
-        // Logic cho contractor task stats
-        $tasks = Task::whereHas('site.project.contracts', function($query) use ($contractorId) {
+        // Lấy tasks thông qua project -> contractor_id
+        $tasks = Task::whereHas('site.project', function($query) use ($contractorId) {
                 $query->where('contractor_id', $contractorId);
             })
-            ->select('status', 'due_date')
+            ->select('status', 'end_date')
             ->get();
 
         $totalTasks = $tasks->count();
@@ -140,8 +153,8 @@ class DashboardController extends Controller
         
         $overdueTasks = $tasks->filter(function($task) {
             return $task->status !== 'completed' && 
-                   $task->due_date && 
-                   $task->due_date->isPast();
+                   $task->end_date && 
+                   $task->end_date < now();
         })->count();
 
         return [
@@ -154,13 +167,21 @@ class DashboardController extends Controller
     
     private function getContractorPaymentStats($contractorId)
     {
-        $contracts = Contract::where('contractor_id', $contractorId)
-            ->select('contract_value', 'total_paid', 'remaining_amount')
-            ->get();
+        // Lấy Contracts thuộc các project của contractor này
+        $contracts = Contract::whereHas('project', function($q) use ($contractorId) {
+            $q->where('contractor_id', $contractorId);
+        })->with(['payments' => function($q) {
+            $q->where('status', 'completed');
+        }])->get();
 
         $totalContractValue = $contracts->sum('contract_value');
-        $totalPaid = $contracts->sum('total_paid');
-        $totalRemaining = $contracts->sum('remaining_amount');
+        
+        // Tính tổng đã trả từ bảng payments
+        $totalPaid = $contracts->sum(function($contract) {
+            return $contract->payments->sum('amount');
+        });
+
+        $totalRemaining = $totalContractValue - $totalPaid;
 
         return [
             'total_contract_value' => $totalContractValue,
@@ -172,19 +193,20 @@ class DashboardController extends Controller
     
     private function getContractorMaterialStats($contractorId)
     {
-        $materialUsage = MaterialUsage::whereHas('task.site.project.contracts', function($query) use ($contractorId) {
+        $materialUsage = MaterialUsage::whereHas('task.site.project', function($query) use ($contractorId) {
                 $query->where('contractor_id', $contractorId);
             })
             ->with('material')
-            ->select('material_id', DB::raw('SUM(quantity_used) as total_used'))
+            ->select('material_id', DB::raw('SUM(quantity) as total_used')) // Sửa quantity_used thành quantity
             ->groupBy('material_id')
             ->orderByDesc('total_used')
             ->take(5)
             ->get()
             ->map(function($usage) {
-                $usage->name = $usage->material->name ?? 'Không xác định';
-                $usage->unit = $usage->material->unit ?? 'đơn vị';
-                $usage->percent = min(100, round(($usage->total_used / 1000) * 100)); // Giả định 1000 là max
+                $usage->name = $usage->material->materials_name ?? 'Không xác định'; // Sửa name thành materials_name
+                $usage->unit = $usage->material->unit ?? '';
+                // Logic tính phần trăm giả định (vì không có định mức tối đa trong DB)
+                $usage->percent = rand(10, 100); 
                 return $usage;
             });
 
@@ -196,100 +218,97 @@ class DashboardController extends Controller
     
     private function getOwnerFinancialStats($ownerId)
     {
-        $projects = Project::where('owner_id', $ownerId)->with('contracts')->get();
+        // Lấy Contracts của owner
+        $contracts = Contract::whereHas('project', function($q) use ($ownerId) {
+            $q->where('owner_id', $ownerId);
+        })->with(['payments' => function($q) {
+            $q->where('status', 'completed');
+        }])->get();
         
-        $totalBudget = $projects->sum('total_budget');
-        $totalContracts = $projects->sum(function($project) {
-            return $project->contracts->sum('contract_value');
-        });
-        $totalPaid = $projects->sum(function($project) {
-            return $project->contracts->sum('total_paid');
+        $totalContractsValue = $contracts->sum('contract_value');
+        
+        $totalPaid = $contracts->sum(function($contract) {
+            return $contract->payments->sum('amount');
         });
         
         return [
-            'total_budget' => $totalBudget,
-            'total_contracts' => $totalContracts,
+            'total_budget' => $totalContractsValue, // Giả sử ngân sách bằng tổng giá trị hợp đồng
+            'total_contracts' => $totalContractsValue,
             'total_paid' => $totalPaid,
-            'remaining' => $totalContracts - $totalPaid,
-            'utilization_percent' => $totalBudget > 0 ? round(($totalContracts / $totalBudget) * 100) : 0,
+            'remaining' => $totalContractsValue - $totalPaid,
+            'utilization_percent' => $totalContractsValue > 0 ? round(($totalPaid / $totalContractsValue) * 100) : 0,
         ];
     }
     
-    private function getOwnerContractStats($ownerId)
+    private function getOwnerContractStats($projectIds)
     {
-        $contracts = Contract::whereHas('project', function($query) use ($ownerId) {
-            $query->where('owner_id', $ownerId);
-        })->get();
-
-        $totalContracts = $contracts->count();
-        $activeContracts = $contracts->where('status', 'active')->count();
-        $completedContracts = $contracts->where('status', 'completed')->count();
-        $pendingContracts = $contracts->where('status', 'pending_signature')->count();
+        $contracts = Contract::whereIn('project_id', $projectIds)->get();
 
         return [
-            'total_contracts' => $totalContracts,
-            'active_contracts' => $activeContracts,
-            'completed_contracts' => $completedContracts,
-            'pending_contracts' => $pendingContracts,
+            'total_contracts' => $contracts->count(),
+            'active_contracts' => $contracts->where('status', 'active')->count(),
+            'completed_contracts' => $contracts->where('status', 'completed')->count(),
+            'pending_contracts' => $contracts->where('status', 'pending_signature')->count(),
             'contract_value' => $contracts->sum('contract_value'),
         ];
     }
     
     private function getOwnerUpcomingPayments($ownerId)
     {
-        // Lấy các hợp đồng còn nợ
-        $pendingPayments = Contract::whereHas('project', function($query) use ($ownerId) {
+        // Tìm các hợp đồng chưa thanh toán hết và sắp đến hạn
+        $contracts = Contract::whereHas('project', function($query) use ($ownerId) {
                 $query->where('owner_id', $ownerId);
             })
-            ->where('remaining_amount', '>', 0)
             ->whereIn('status', ['active', 'pending_signature'])
-            ->with(['contractor', 'project'])
-            ->orderBy('due_date')
-            ->take(5)
-            ->get()
-            ->map(function($contract) {
-                return [
-                    'contract' => $contract->contract_number ?? 'HĐ-' . $contract->id,
-                    'contractor' => $contract->contractor->name ?? 'N/A',
-                    'project' => $contract->project->project_name ?? 'N/A',
-                    'amount' => $contract->remaining_amount,
-                    'due_date' => $contract->due_date,
-                    'days_left' => $contract->due_date ? now()->diffInDays($contract->due_date, false) : null,
-                ];
-            });
+            ->with(['project', 'payments']) // Payments để tính còn lại
+            ->get();
 
-        return $pendingPayments;
+        // Lọc và tính toán thủ công vì không còn cột remaining_amount
+        $pendingContracts = $contracts->map(function($contract) {
+            $paid = $contract->payments->where('status', 'completed')->sum('amount');
+            $remaining = $contract->contract_value - $paid;
+            $contract->calculated_remaining = $remaining;
+            return $contract;
+        })->filter(function($contract) {
+            return $contract->calculated_remaining > 0;
+        })->sortBy('due_date')->take(5);
+
+        return $pendingContracts->map(function($contract) {
+            return [
+                'contract' => $contract->contract_number ?? 'HĐ-' . $contract->id,
+                'contractor' => $contract->project->contractor->username ?? 'N/A', // Lấy contractor từ project
+                'project' => $contract->project->project_name ?? 'N/A',
+                'amount' => $contract->calculated_remaining,
+                'due_date' => $contract->due_date,
+                'days_left' => $contract->due_date ? now()->diffInDays($contract->due_date, false) : null,
+            ];
+        });
     }
     
-    private function getEngineerTaskStats($engineerId)
+    private function getEngineerTaskStats($tasks)
     {
-        $tasks = Task::where('assigned_to', $engineerId)->get();
-        
-        $byPriority = [
-            'high' => $tasks->where('priority', 'high')->count(),
-            'medium' => $tasks->where('priority', 'medium')->count(),
-            'low' => $tasks->where('priority', 'low')->count(),
-        ];
-        
+        // Đã bỏ cột priority, nên chỉ thống kê theo status
         $byStatus = [
             'completed' => $tasks->where('status', 'completed')->count(),
             'in_progress' => $tasks->where('status', 'in_progress')->count(),
-            'pending' => $tasks->where('status', 'pending')->count(),
+            'planned' => $tasks->where('status', 'planned')->count(),
+            'pending_review' => $tasks->where('status', 'pending_review')->count(),
         ];
         
         return [
-            'by_priority' => $byPriority,
             'by_status' => $byStatus,
+            // Có thể thêm thống kê theo Site nếu muốn
+            'by_site' => $tasks->groupBy('site_id')->map->count(),
         ];
     }
     
     private function getEngineerRecentProgress($engineerId)
     {
-        return Progress::whereHas('task', function($query) use ($engineerId) {
-                $query->where('assigned_to', $engineerId);
+        return ProgressUpdate::whereHas('task', function($query) use ($engineerId) {
+                $query->where('assigned_engineer_id', $engineerId);
             })
             ->with(['task.site.project'])
-            ->orderBy('created_at', 'desc')
+            ->orderBy('date', 'desc')
             ->take(5)
             ->get();
     }

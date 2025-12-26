@@ -183,7 +183,7 @@
                 <div class="text-center p-3 bg-green-50 rounded-lg">
                     <p class="text-sm text-gray-600">Mốc quan trọng</p>
                     <p class="text-2xl font-bold text-gray-900">
-                        {{ $project->milestones->count() }}
+                        {{-- {{ $project->milestones->count() }} --}}
                     </p>
                 </div>
                 <div class="text-center p-3 bg-yellow-50 rounded-lg">

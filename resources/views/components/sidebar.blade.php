@@ -130,11 +130,11 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('client.progress.index') }}"
+                    <a href="{{ route('client.progress_updates.index') }}"
                         class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
                         {{ request()->routeIs('client.progress.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
                         <div class="w-8 h-8 flex items-center justify-center">
-                            <i class="fas fa-chart-line text-sm {{ request()->routeIs('client.progress.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
+                            <i class="fas fa-chart-line text-sm {{ request()->routeIs('client.progress_updates.*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }}"></i>
                         </div>
                         <span class="text-sm font-semibold">Tiến độ</span>
                     </a>
@@ -150,8 +150,7 @@
                     </a>
                 </li>
                 <li>
-                    {{-- <a href="{{ route('client.payments.index') }}" --}}
-                    <a href="#"
+                    <a href="{{ route('client.payments.index') }}"
                         class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 group
                         {{ request()->routeIs('client.payments.*') ? 'bg-indigo-50 text-indigo-700 font-bold border-r-4 border-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-r-4 hover:border-indigo-400' }}">
                         <div class="w-8 h-8 flex items-center justify-center">

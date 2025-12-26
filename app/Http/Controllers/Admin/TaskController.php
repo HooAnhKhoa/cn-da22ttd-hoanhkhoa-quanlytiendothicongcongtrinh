@@ -124,10 +124,9 @@ class TaskController extends Controller
         // CHỈ load materialUsages với material, KHÔNG load materials (vì quan hệ không tồn tại)
         $task->load([
             'site.project',
-            'parent',
+            'parent',       
             'children',
             'progressUpdates',
-            'delays',
             'materialUsages.material', // Chỉ cần load này
         ]);
 

@@ -49,11 +49,6 @@ class Project extends Model
         return $this->hasMany(Site::class);
     }
 
-    public function milestones()
-    {
-        return $this->hasMany(Milestone::class);
-    }
-
     public function contracts()
     {
         return $this->hasMany(Contract::class);
@@ -62,11 +57,6 @@ class Project extends Model
     public function documents()
     {
         return $this->hasMany(Document::class);
-    }
-
-    public function drawings()
-    {
-        return $this->hasMany(Drawing::class);
     }
 
     public static function getStatuses()

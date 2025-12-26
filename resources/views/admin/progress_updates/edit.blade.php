@@ -7,7 +7,7 @@
     <div class="max-w-3xl mx-auto">
         <div class="mb-6">
             <nav class="mb-4">
-                <a href="{{ route('tasks.show', $progressUpdate->task_id) }}" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 transition-colors">
+                <a href="{{ route('admin.tasks.show', $progressUpdate->task_id) }}" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 transition-colors">
                     <i class="fas fa-arrow-left mr-2"></i>Quay lại công việc
                 </a>
             </nav>
@@ -16,7 +16,7 @@
         </div>
 
         <div class="bg-white rounded-lg shadow p-6">
-            <form action="{{ route('progress_updates.update', $progressUpdate->id) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.progress_updates.update', $progressUpdate->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 
@@ -124,7 +124,7 @@
                                     </span>
                                 </div>
                                 <div class="flex gap-2">
-                                    <a href="{{ route('progress_updates.download', ['id' => $progressUpdate->id, 'filename' => $file]) }}"
+                                    <a href="{{ route('admin.progress_updates.download', ['id' => $progressUpdate->id, 'filename' => $file]) }}"
                                        class="text-blue-600 hover:text-blue-800"
                                        title="Tải xuống">
                                         <i class="fas fa-download"></i>
@@ -157,7 +157,7 @@
                 </div>
 
                 <div class="flex justify-end gap-3">
-                    <a href="{{ route('tasks.show', $progressUpdate->task_id) }}"
+                    <a href="{{ route('admin.tasks.show', $progressUpdate->task_id) }}"
                        class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
                         Hủy
                     </a>

@@ -24,8 +24,7 @@ class ContractSeeder extends Seeder
             for ($i = 0; $i < $count; $i++) {
                 Contract::factory()->create([
                     'project_id' => $project->id,
-                    'owner_id' => $project->owner_id,
-                    'contractor_id' => $project->contractor_id,
+                    // Đã xóa owner_id, contractor_id vì chúng nằm trong Project
                     'status' => $this->getContractStatusForProject($project),
                 ]);
             }
@@ -41,8 +40,6 @@ class ContractSeeder extends Seeder
             'in_progress' => 'active',
             'completed' => 'completed',
             'cancelled' => 'terminated',
-            // default => $this->faker->randomElement(['draft', 'pending_signature']),
-            // Thay $this->faker bằng fake()
             default => fake()->randomElement(['draft', 'pending_signature']),
         };
     }

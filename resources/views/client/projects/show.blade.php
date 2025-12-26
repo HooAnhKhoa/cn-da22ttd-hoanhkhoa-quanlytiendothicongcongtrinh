@@ -19,12 +19,9 @@
     </div>
 </div>
 
-<!-- Thông báo -->
 @include('components.alert')
 
-<!-- Main Content Grid -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-    <!-- Project Information -->
     <div class="bg-white rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200">
             <h2 class="text-xl font-semibold text-gray-800">
@@ -84,7 +81,6 @@
                     </span>
                 </div>
                                 
-                <!-- Statistics Box -->
                 <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                     <div class="flex items-center">
                         <i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>
@@ -106,7 +102,6 @@
         </div>
     </div>
 
-    <!-- Project Team -->
     <div class="bg-white rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200">
             <h2 class="text-xl font-semibold text-gray-800">
@@ -115,7 +110,6 @@
         </div>
         <div class="p-6">
             <div class="space-y-6">
-                <!-- Owner -->
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
@@ -129,7 +123,6 @@
                     <span class="text-sm text-gray-500">{{ $project->owner->email }}</span>
                 </div>
 
-                <!-- Contractor -->
                 @if($project->contractor)
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
@@ -145,7 +138,6 @@
                 </div>
                 @endif
 
-                <!-- Engineer -->
                 @if($project->engineer)
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
@@ -162,18 +154,12 @@
                 @endif
             </div>
             
-            <!-- Statistics Grid -->
             <div class="mt-6 grid grid-cols-2 gap-4">
                 <div class="text-center p-3 bg-blue-50 rounded-lg">
                     <p class="text-sm text-gray-600">Công trường</p>
                     <p class="text-2xl font-bold text-gray-900">{{ $project->sites->count() }}</p>
                 </div>
-                <div class="text-center p-3 bg-green-50 rounded-lg">
-                    <p class="text-sm text-gray-600">Mốc quan trọng</p>
-                    <p class="text-2xl font-bold text-gray-900">
-                        {{ $project->milestones->count() }}
-                    </p>
-                </div>
+                
                 <div class="text-center p-3 bg-yellow-50 rounded-lg">
                     <p class="text-sm text-gray-600">Hợp đồng</p>
                     <p class="text-2xl font-bold text-gray-900">
@@ -191,7 +177,7 @@
     </div>      
 </div>
 
-<!-- Danh sách công trường của dự án -->
+<!-- Phần Accordion cho công trường -->
 <div class="bg-white rounded-lg shadow mb-8">
     <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 class="text-xl font-semibold text-gray-800">
@@ -202,123 +188,333 @@
     
     <div class="p-6">
         @if($project->sites && $project->sites->count() > 0)
-            <!-- Sites Table -->
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STT</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên công trường</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tiến độ</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Công việc</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời gian</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($project->sites as $index => $site)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
-                                {{ $index + 1 }}
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-map-marker-alt text-blue-600"></i>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">
-                                            <a href="{{ route('client.sites.show', $site) }}" class="hover:text-blue-600">
-                                                {{ $site->site_name }}
-                                            </a>
-                                        </div>
-                                        @if($site->location)
-                                        <div class="text-sm text-gray-500 max-w-xs truncate">
-                                            {{ $site->location }}
-                                        </div>
-                                        @endif
-                                    </div>
+            <div class="space-y-4" id="sites-accordion">
+                @foreach($project->sites as $siteIndex => $site)
+                    @php
+                        $totalTasks = $site->tasks->count();
+                        $completedTasks = $site->tasks->where('status', 'completed')->count();
+                        $totalProgress = 0;
+                        $siteProgress = 0;
+                        
+                        if($totalTasks > 0) {
+                            foreach($site->tasks as $task) {
+                                $totalProgress += $task->progress_percent ?? 0;
+                            }
+                            $siteProgress = round($totalProgress / $totalTasks, 1);
+                        }
+
+                        $statusColors = [
+                            'planned' => 'bg-blue-100 text-blue-800',
+                            'in_progress' => 'bg-green-100 text-green-800',
+                            'completed' => 'bg-gray-100 text-gray-800',
+                            'on_hold' => 'bg-yellow-100 text-yellow-800',
+                            'cancelled' => 'bg-red-100 text-red-800',
+                        ];
+                        $statusTexts = [
+                            'planned' => 'Lập kế hoạch',
+                            'in_progress' => 'Đang thi công',
+                            'completed' => 'Hoàn thành',
+                            'on_hold' => 'Tạm dừng',
+                            'cancelled' => 'Đã hủy',
+                        ];
+                    @endphp
+                    
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <!-- Header công trường -->
+                        <div class="bg-gray-50 px-6 py-4 flex justify-between items-center cursor-pointer site-header hover:bg-gray-100 transition-colors"
+                             data-site-id="{{ $site->id }}">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-map-marker-alt text-blue-600"></i>
                                 </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @php
-                                    $statusColors = [
-                                        'planned' => 'bg-blue-100 text-blue-800',
-                                        'in_progress' => 'bg-green-100 text-green-800',
-                                        'completed' => 'bg-gray-100 text-gray-800',
-                                        'on_hold' => 'bg-yellow-100 text-yellow-800',
-                                        'cancelled' => 'bg-red-100 text-red-800',
-                                    ];
-                                    $statusTexts = [
-                                        'planned' => 'Lập kế hoạch',
-                                        'in_progress' => 'Đang thi công',
-                                        'completed' => 'Hoàn thành',
-                                        'on_hold' => 'Tạm dừng',
-                                        'cancelled' => 'Đã hủy',
-                                    ];
-                                @endphp
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $statusColors[$site->status] ?? 'bg-gray-100 text-gray-800' }}">
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">{{ $site->site_name }}</h3>
+                                    @if($site->location)
+                                    <p class="text-sm text-gray-600">{{ $site->location }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center space-x-6">
+                                <div class="text-center">
+                                    <span class="block font-medium text-gray-800">{{ $totalTasks }}</span>
+                                    <span class="text-xs text-gray-500">Công việc</span>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <span class="block font-medium text-gray-800">{{ $completedTasks }}</span>
+                                    <span class="text-xs text-gray-500">Hoàn thành</span>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <span class="block font-medium text-gray-800">{{ $siteProgress }}%</span>
+                                    <span class="text-xs text-gray-500">Tiến độ</span>
+                                </div>
+                                
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $statusColors[$site->status] ?? 'bg-gray-100 text-gray-800' }}">
                                     {{ $statusTexts[$site->status] ?? $site->status }}
                                 </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                                
                                 <div class="flex items-center">
-                                    <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                                        @php
-                                            $totalTasks = $site->tasks->count();
-                                            $totalProgress = 0;
-                                            $siteProgress = 0;
-                                            
-                                            if($totalTasks > 0) {
-                                                foreach($site->tasks as $task) {
-                                                    $totalProgress += $task->progress_percent ?? 0;
-                                                }
-                                                $siteProgress = round($totalProgress / $totalTasks, 1);
-                                            }
-                                        @endphp
-                                        <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                                             style="width: {{ $siteProgress }}%"></div>
-                                    </div>
-                                    <span class="text-sm text-gray-600">{{ $siteProgress }}%</span>
+                                    <span class="text-sm text-gray-600">{{ $site->start_date ? $site->start_date->format('d/m/Y') : 'N/A' }}</span>
+                                    @if($site->end_date)
+                                    <span class="mx-2">→</span>
+                                    <span class="text-sm text-gray-600">{{ $site->end_date->format('d/m/Y') }}</span>
+                                    @endif
                                 </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-center">
-                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-medium">
-                                        {{ $site->tasks->count() }}
-                                    </span>
-                                    <div class="text-xs text-gray-500 mt-1">
-                                        @php
-                                            $completedTasks = $site->tasks->where('status', 'completed')->count();
-                                        @endphp
-                                        {{ $completedTasks }} hoàn thành
+                                
+                                <i class="fas fa-chevron-down text-gray-400 transition-transform site-arrow"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Nội dung công trường (ẩn ban đầu) -->
+                        <div class="hidden site-content" id="site-content-{{ $site->id }}">
+                            <div class="px-6 py-4 bg-white">
+                                @if($site->tasks && $site->tasks->count() > 0)
+                                    <div class="space-y-4">
+                                        @foreach($site->tasks as $taskIndex => $task)
+                                            <div class="border border-gray-200 rounded-lg">
+                                                <!-- Header công việc -->
+                                                <div class="bg-gray-50 px-4 py-3 flex justify-between items-center cursor-pointer task-header hover:bg-gray-100 transition-colors"
+                                                     data-task-id="{{ $task->id }}">
+                                                    <div class="flex items-center space-x-3">
+                                                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                                            <i class="fas fa-tasks text-green-600 text-sm"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h4 class="font-medium text-gray-800">{{ $task->task_name }}</h4>
+                                                            <p class="text-xs text-gray-500">
+                                                                {{ $task->start_date ? $task->start_date->format('d/m/Y') : 'N/A' }}
+                                                                @if($task->end_date)
+                                                                - {{ $task->end_date->format('d/m/Y') }}
+                                                                @endif
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="flex items-center space-x-4">
+                                                        <div class="flex items-center space-x-2">
+                                                            <div class="w-20 bg-gray-200 rounded-full h-2">
+                                                                <div class="bg-green-600 h-2 rounded-full" 
+                                                                     style="width: {{ $task->progress_percent ?? 0 }}%"></div>
+                                                            </div>
+                                                            <span class="text-sm font-medium text-gray-700">{{ $task->progress_percent ?? 0 }}%</span>
+                                                        </div>
+                                                        
+                                                        @php
+                                                            $taskStatusColors = [
+                                                                'not_started' => 'bg-gray-100 text-gray-800',
+                                                                'in_progress' => 'bg-yellow-100 text-yellow-800',
+                                                                'completed' => 'bg-green-100 text-green-800',
+                                                                'on_hold' => 'bg-red-100 text-red-800',
+                                                            ];
+                                                            $taskStatusTexts = [
+                                                                'not_started' => 'Chưa bắt đầu',
+                                                                'in_progress' => 'Đang thực hiện',
+                                                                'completed' => 'Hoàn thành',
+                                                                'on_hold' => 'Tạm dừng',
+                                                            ];
+                                                        @endphp
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $taskStatusColors[$task->status] ?? 'bg-gray-100 text-gray-800' }}">
+                                                            {{ $taskStatusTexts[$task->status] ?? $task->status }}
+                                                        </span>
+                                                        
+                                                        <i class="fas fa-chevron-down text-gray-400 transition-transform task-arrow"></i>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Nội dung công việc (ẩn ban đầu) -->
+                                                <div class="hidden task-content" id="task-content-{{ $task->id }}">
+                                                    <div class="px-4 py-4">
+                                                        <!-- Thông tin công việc -->
+                                                        <div class="mb-4">
+                                                            <h5 class="font-medium text-gray-700 mb-2">Thông tin công việc</h5>
+                                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                                @if($task->description)
+                                                                <div>
+                                                                    <span class="text-sm text-gray-600">Mô tả:</span>
+                                                                    <p class="text-sm text-gray-800 mt-1">{{ $task->description }}</p>
+                                                                </div>
+                                                                @endif
+                                                                
+                                                                <div>
+                                                                    <span class="text-sm text-gray-600">Thời gian:</span>
+                                                                    <p class="text-sm text-gray-800 mt-1">
+                                                                        {{ $task->start_date ? $task->start_date->format('d/m/Y') : 'N/A' }}
+                                                                        @if($task->end_date)
+                                                                        → {{ $task->end_date->format('d/m/Y') }}
+                                                                        @endif
+                                                                    </p>
+                                                                </div>
+                                                                
+                                                                @if($task->assigned_to)
+                                                                <div>
+                                                                    <span class="text-sm text-gray-600">Người phụ trách:</span>
+                                                                    <p class="text-sm text-gray-800 mt-1">{{ $task->assigned_to }}</p>
+                                                                </div>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <!-- Tiến độ và hình ảnh -->
+                                                        @if($task->progressUpdates && $task->progressUpdates->count() > 0)
+                                                            <div class="border-t border-gray-200 pt-4">
+                                                                <h5 class="font-medium text-gray-700 mb-3">Cập nhật tiến độ</h5>
+                                                                <div class="space-y-3">
+                                                                    @foreach($task->progressUpdates as $update)
+                                                                        <div class="bg-gray-50 rounded-lg p-3">
+                                                                            <div class="flex justify-between items-start mb-2">
+                                                                                <div>
+                                                                                    <span class="text-sm font-medium text-gray-800">
+                                                                                        {{ $update->progress_percent ?? 0 }}% hoàn thành
+                                                                                    </span>
+                                                                                    @if($update->creator)
+                                                                                    <p class="text-xs text-gray-500 mt-1">
+                                                                                        <i class="fas fa-user mr-1"></i>{{ $update->creator->username }} 
+                                                                                        • <i class="far fa-clock ml-2 mr-1"></i>{{ $update->date->format('d/m/Y H:i') }}
+                                                                                    </p>
+                                                                                    @endif
+                                                                                </div>
+                                                                                @if($update->status)
+                                                                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium 
+                                                                                    {{ $update->status == 'completed' ? 'bg-green-100 text-green-800' : 
+                                                                                    ($update->status == 'in_progress' ? 'bg-yellow-100 text-yellow-800' : 
+                                                                                    'bg-gray-100 text-gray-800') }}">
+                                                                                    <i class="fas fa-circle mr-1 text-xs"></i>{{ $update->status }}
+                                                                                </span>
+                                                                                @endif
+                                                                            </div>
+                                                                            
+                                                                            @if($update->description)
+                                                                            <div class="mb-3">
+                                                                                <span class="text-xs font-medium text-gray-700 block mb-1">Ghi chú:</span>
+                                                                                <p class="text-sm text-gray-600 bg-white p-2 rounded border border-gray-200">{{ $update->description }}</p>
+                                                                            </div>
+                                                                            @endif
+                                                                            
+                                                                            <!-- Hiển thị file đính kèm -->
+                                                                            @if($update->attached_files && is_array($update->attached_files) && count($update->attached_files) > 0)
+                                                                            <div class="mt-4">
+                                                                                <div class="flex items-center justify-between mb-2">
+                                                                                    <span class="text-sm font-medium text-gray-700">
+                                                                                        <i class="fas fa-paperclip mr-2"></i>File đính kèm ({{ count($update->attached_files) }})
+                                                                                    </span>
+                                                                                </div>
+                                                                                
+                                                                                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                                                                    @foreach($update->attached_files as $fileIndex => $filePath)
+                                                                                    @php
+                                                                                        $fileExt = pathinfo($filePath, PATHINFO_EXTENSION);
+                                                                                        $isImage = in_array(strtolower($fileExt), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                                                                        $fileName = pathinfo($filePath, PATHINFO_BASENAME);
+                                                                                    @endphp
+                                                                                    
+                                                                                    <div class="relative group">
+                                                                                        @if($isImage)
+                                                                                        <a href="{{ Storage::url($filePath) }}" 
+                                                                                           data-lightbox="progress-images-{{ $update->id }}-{{ $task->id }}"
+                                                                                           data-title="Cập nhật {{ $update->date->format('d/m/Y') }} - {{ $fileName }}"
+                                                                                           class="block rounded-lg overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors">
+                                                                                            <img src="{{ Storage::url($filePath) }}" 
+                                                                                                 alt="{{ $fileName }}"
+                                                                                                 class="w-full h-32 object-cover"
+                                                                                                 onerror="this.src='https://via.placeholder.com/300x200?text=Không+thể+hiển+thị+hình+ảnh'">
+                                                                                            
+                                                                                            <!-- Overlay trên ảnh -->
+                                                                                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                                                                                <i class="fas fa-search-plus text-white text-lg"></i>
+                                                                                            </div>
+                                                                                        </a>
+                                                                                        @else
+                                                                                        <a href="{{ Storage::url($filePath) }}" 
+                                                                                           target="_blank"
+                                                                                           class="block rounded-lg overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors p-3 bg-gray-50">
+                                                                                            <div class="flex flex-col items-center justify-center h-32">
+                                                                                                <i class="fas fa-file text-3xl text-gray-400 mb-2"></i>
+                                                                                                <span class="text-xs text-gray-600 truncate w-full text-center">
+                                                                                                    {{ Str::limit($fileName, 20) }}
+                                                                                                </span>
+                                                                                                <span class="text-xs text-gray-500 mt-1">{{ strtoupper($fileExt) }}</span>
+                                                                                            </div>
+                                                                                        </a>
+                                                                                        @endif
+                                                                                        
+                                                                                        <!-- Thông tin file -->
+                                                                                        <p class="text-xs text-gray-500 mt-1 truncate" title="{{ $fileName }}">
+                                                                                            {{ Str::limit($fileName, 20) }}
+                                                                                        </p>
+                                                                                    </div>
+                                                                                    @endforeach
+                                                                                </div>
+                                                                            </div>
+                                                                            @endif
+                                                                            
+                                                                            <!-- Thông tin bổ sung -->
+                                                                            <div class="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500">
+                                                                                <div class="flex flex-wrap gap-3">
+                                                                                    @if($update->updated_at && $update->updated_at != $update->created_at)
+                                                                                    <span>
+                                                                                        <i class="far fa-edit mr-1"></i>
+                                                                                        Sửa lần cuối: {{ $update->updated_at->format('d/m/Y H:i') }}
+                                                                                    </span>
+                                                                                    @endif
+                                                                                    
+                                                                                    @if($update->location)
+                                                                                    <span>
+                                                                                        <i class="fas fa-map-marker-alt mr-1"></i>
+                                                                                        {{ $update->location }}
+                                                                                    </span>
+                                                                                    @endif
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
+                                                        @else
+                                                            <div class="text-center py-8 border-t border-gray-200">
+                                                                <div class="inline-flex items-center justify-center w-14 h-14 bg-gray-100 rounded-full mb-3">
+                                                                    <i class="fas fa-history text-gray-400 text-xl"></i>
+                                                                </div>
+                                                                <h6 class="font-medium text-gray-700 mb-1">Chưa có cập nhật tiến độ</h6>
+                                                                <p class="text-gray-500 text-sm">Chưa có báo cáo nào cho công việc này</p>
+                                                                
+                                                                <!-- Nút để thêm cập nhật tiến độ -->
+                                                                @can('create', App\Models\ProgressUpdate::class)
+                                                                <a href="{{ route('client.progress_updates.create', ['task' => $task->id]) }}" 
+                                                                class="inline-flex items-center px-3 py-1.5 mt-3 bg-blue-50 text-blue-600 rounded-lg text-sm hover:bg-blue-100 transition-colors">
+                                                                    <i class="fas fa-plus mr-1"></i>Thêm cập nhật
+                                                                </a>
+                                                                @endcan
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
                                     </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <div>{{ $site->start_date ? $site->start_date->format('d/m/Y') : 'N/A' }}</div>
-                                @if($site->end_date)
-                                <div class="text-gray-500 text-xs">→ {{ $site->end_date->format('d/m/Y') }}</div>
+                                    
+                                    <div class="mt-4 flex justify-end">
+                                        <a href="{{ route('client.progress_updates.index', $site) }}" 
+                                           class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                            <i class="fas fa-external-link-alt mr-2"></i>Xem chi tiết công trường
+                                        </a>
+                                    </div>
+                                @else
+                                    <div class="text-center py-8">
+                                        <div class="inline-flex items-center justify-center w-14 h-14 bg-gray-100 rounded-full mb-3">
+                                            <i class="fas fa-tasks text-gray-400 text-xl"></i>
+                                        </div>
+                                        <h6 class="font-medium text-gray-700 mb-1">Chưa có công việc nào</h6>
+                                        <p class="text-gray-500 text-sm">Công trường chưa được gán công việc</p>
+                                    </div>
                                 @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex items-center space-x-2">
-                                    <a href="{{ route('client.sites.show', $site) }}" 
-                                       class="text-blue-600 hover:text-blue-900" 
-                                       title="Xem chi tiết">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
-            
         @else
-            <!-- Empty state -->
             <div class="text-center py-12">
                 <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
                     <i class="fas fa-map-marker-alt text-3xl text-gray-400"></i>
@@ -330,7 +526,7 @@
     </div>
 </div>
 
-<!-- Tabs Section cho Contracts và Documents -->
+<!-- Các phần hợp đồng và tài liệu -->
 <div class="bg-white rounded-lg shadow mb-8">
     <div class="border-b border-gray-200">
         <nav class="flex -mb-px">
@@ -344,7 +540,6 @@
     </div>
 
     <div class="p-6">
-        <!-- Contracts Tab -->
         <div id="tab-contracts" class="tab-content active">
             @if($project->contracts->count() > 0)
                 <div class="space-y-4">
@@ -390,7 +585,6 @@
             @endif
         </div>
 
-        <!-- Documents Tab -->
         <div id="tab-documents" class="tab-content hidden">
             @if($project->documents && $project->documents->count() > 0)
                 <div class="space-y-4">
@@ -414,7 +608,8 @@
                             </div>
                             <div class="flex items-center space-x-2">
                                 @if($document->file_path)
-                                <a href="#" 
+                                <a href="{{ Storage::url($document->file_path) }}" 
+                                   target="_blank"
                                    class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors">
                                     <i class="fas fa-download mr-1"></i>Tải xuống
                                 </a>
@@ -437,7 +632,6 @@
     </div>
 </div>
 
-<!-- Action Buttons -->
 <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
     <div class="text-sm text-gray-500">
         Tạo ngày: {{ $project->created_at->format('d/m/Y H:i') }}
@@ -480,6 +674,71 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Accordion functionality for sites
+    const siteHeaders = document.querySelectorAll('.site-header');
+    siteHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const siteId = this.getAttribute('data-site-id');
+            const content = document.getElementById(`site-content-${siteId}`);
+            const arrow = this.querySelector('.site-arrow');
+            
+            // Toggle content visibility
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                arrow.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                arrow.classList.remove('rotate-180');
+            }
+        });
+    });
+
+    // Accordion functionality for tasks
+    const taskHeaders = document.querySelectorAll('.task-header');
+    taskHeaders.forEach(header => {
+        header.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent triggering parent site header
+            const taskId = this.getAttribute('data-task-id');
+            const content = document.getElementById(`task-content-${taskId}`);
+            const arrow = this.querySelector('.task-arrow');
+            
+            // Toggle content visibility
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                arrow.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                arrow.classList.remove('rotate-180');
+            }
+        });
+    });
+
+    // Open first site and task by default (optional)
+    const firstSiteHeader = document.querySelector('.site-header');
+    if (firstSiteHeader) {
+        const firstSiteId = firstSiteHeader.getAttribute('data-site-id');
+        const firstSiteContent = document.getElementById(`site-content-${firstSiteId}`);
+        const firstSiteArrow = firstSiteHeader.querySelector('.site-arrow');
+        
+        if (firstSiteContent) {
+            firstSiteContent.classList.remove('hidden');
+            firstSiteArrow.classList.add('rotate-180');
+            
+            // Open first task of first site
+            const firstTaskHeader = firstSiteContent.querySelector('.task-header');
+            if (firstTaskHeader) {
+                const firstTaskId = firstTaskHeader.getAttribute('data-task-id');
+                const firstTaskContent = document.getElementById(`task-content-${firstTaskId}`);
+                const firstTaskArrow = firstTaskHeader.querySelector('.task-arrow');
+                
+                if (firstTaskContent && firstTaskArrow) {
+                    firstTaskContent.classList.remove('hidden');
+                    firstTaskArrow.classList.add('rotate-180');
+                }
+            }
+        }
+    }
 });
 </script>
 @endpush
@@ -513,6 +772,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .progress-bar {
     transition: width 1s ease-in-out;
+}
+
+/* Rotate animation for arrows */
+.rotate-180 {
+    transform: rotate(180deg);
+    transition: transform 0.3s ease;
+}
+
+.site-arrow, .task-arrow {
+    transition: transform 0.3s ease;
+}
+
+/* Smooth accordion animations */
+.site-content, .task-content {
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 </style>
 @endpush

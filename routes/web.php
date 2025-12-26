@@ -27,6 +27,12 @@ use App\Http\Controllers\Client\IssueController as ClientIssueController;
 use App\Http\Controllers\Client\DashboardController as ClientDashboardController;
 use App\Http\Controllers\Client\ContractController as ClientContractController;
 use App\Http\Controllers\Client\OwnerContractController;
+use App\Http\Controllers\Client\PaymentController;
+use App\Http\Controllers\Client\ProgressUpdateController as ClientProgressUpdateController;
+use App\Http\Controllers\Client\OwnerProjectController;
+use App\Http\Controllers\Client\OwnerReportController;
+use App\Http\Controllers\Client\EngineerTaskController;
+use App\Http\Controllers\Client\EngineerProgressController;
 /*
 |--------------------------------------------------------------------------
 | Public Routes
@@ -105,8 +111,8 @@ Route::middleware(['auth', 'client'])->prefix('client')->name('client.')->group(
     });
 
     Route::middleware(['role:contractor'])->group(function () {
-        Route::get('/contracts', [ClientContractController::class, 'index'])->name('contracts.index');
-        Route::get('/contracts/{contract}', [ClientContractController::class, 'show'])->name('contracts.show');
+        // Route::get('/contracts', [ClientContractController::class, 'index'])->name('contracts.index');
+        // Route::get('/contracts/{contract}', [ClientContractController::class, 'show'])->name('contracts.show');
         
         Route::get('/progress', [ClientProgressController::class, 'index'])->name('progress.index');
         Route::get('/progress/{progress}', [ClientProgressController::class, 'show'])->name('progress.show');
@@ -120,6 +126,7 @@ Route::middleware(['auth', 'client'])->prefix('client')->name('client.')->group(
         Route::post('/contracts/{contract}/approve', [OwnerContractController::class, 'approve'])
                 ->name('contracts_approve'); 
     });
+
     // Engineer only routes
     Route::middleware(['role:engineer'])->group(function () {
         Route::get('/my-tasks', [EngineerTaskController::class, 'index'])->name('engineer.tasks.index');
@@ -128,7 +135,15 @@ Route::middleware(['auth', 'client'])->prefix('client')->name('client.')->group(
     });
     
     Route::middleware(['role:contractor,owner'])->group(function () {
+        
+        
+        Route::get('/progress-updates', [ClientProgressUpdateController::class, 'index'])->name('progress_updates.index');
+
         Route::get('/contracts', [ClientContractController::class, 'index'])->name('contracts.index');
         Route::get('/contracts/{contract}', [ClientContractController::class, 'show'])->name('contracts.show');
+
+        Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+        Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
+        Route::post('/payments/{payment}/download-receipt', [PaymentController::class, 'downloadReceipt'])->name('payments.download-receipt');
     });
 });

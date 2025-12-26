@@ -112,7 +112,6 @@ class ProjectController extends Controller
                                 ->withSum('materialUsages as total_material_quantity', 'quantity');
                     }]);
             },
-            'milestones'
         ]);
         
         $hasContracts = $project->contracts->count() > 0;

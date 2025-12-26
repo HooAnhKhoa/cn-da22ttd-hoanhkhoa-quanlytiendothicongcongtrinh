@@ -72,38 +72,45 @@ class ProgressUpdateController extends Controller
             'date' => 'required|date',
             'progress_percent' => 'required|numeric|min:0|max:100',
             'description' => 'nullable|string|max:2000',
-            'attached_files.*' => 'nullable|file|max:10240', // 10MB max per file
+            'attached_files.*' => 'nullable|file|max:10240', // 10MB
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        // Handle file uploads
+        // 1. Xử lý upload file
         $filePaths = [];
         if ($request->hasFile('attached_files')) {
             foreach ($request->file('attached_files') as $file) {
+                // Lưu vào folder 'public/progress_updates'
                 $path = $file->store('progress_updates', 'public');
                 $filePaths[] = $path;
             }
         }
 
-        // Create progress update
+        // 2. Tạo bản ghi (Model tự ép kiểu mảng sang JSON)
         $progressUpdate = ProgressUpdate::create([
             'task_id' => $request->task_id,
             'date' => $request->date,
             'progress_percent' => $request->progress_percent,
             'description' => $request->description,
-            'attached_files' => !empty($filePaths) ? json_encode($filePaths) : null,
-            'created_by' => Auth::id(), // Thay đổi này - sử dụng ID thay vì email
+            'attached_files' => !empty($filePaths) ? $filePaths : null, // Truyền mảng trực tiếp
+            'created_by' => Auth::id(),
         ]);
 
-        // Update task progress
+        // 3. Cập nhật tiến độ Task
         $task = Task::find($request->task_id);
         if ($task) {
             $task->progress_percent = $request->progress_percent;
+            // Tự động chuyển trạng thái nếu đạt 100%
+            if ($request->progress_percent == 100) {
+                $task->status = 'completed';
+                $task->end_date = now();
+            } elseif ($task->status == 'planned' && $request->progress_percent > 0) {
+                $task->status = 'in_progress';
+                $task->start_date = now();
+            }
             $task->save();
         }
 
@@ -114,9 +121,9 @@ class ProgressUpdateController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        $progressUpdate = ProgressUpdate::with(['task', 'creator'])
+        $progressUpdate = ProgressUpdate::with(['task.site.project', 'reporter'])
             ->findOrFail($id);
         
         return view('admin.progress_updates.show', compact('progressUpdate'));
@@ -133,7 +140,7 @@ class ProgressUpdateController extends Controller
             ->orderBy('task_name')
             ->get();
         
-        return view('progress_updates.edit', compact('progressUpdate', 'tasks'));
+        return view('admin.progress_updates.edit', compact('progressUpdate', 'tasks'));
     }
 
     /**
@@ -153,26 +160,24 @@ class ProgressUpdateController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        // Handle file management
-        $existingFiles = json_decode($progressUpdate->attached_files, true) ?? [];
+        // 1. Lấy danh sách file hiện tại (Model tự cast sang Array, KHÔNG dùng json_decode)
+        $existingFiles = $progressUpdate->attached_files ?? [];
         
-        // Remove selected files
+        // 2. Xóa file được chọn (nếu có)
         if ($request->has('remove_files')) {
             foreach ($request->remove_files as $fileToRemove) {
                 if (($key = array_search($fileToRemove, $existingFiles)) !== false) {
-                    Storage::disk('public')->delete($fileToRemove);
-                    unset($existingFiles[$key]);
+                    Storage::disk('public')->delete($fileToRemove); // Xóa file vật lý
+                    unset($existingFiles[$key]); // Xóa khỏi mảng
                 }
             }
-            $existingFiles = array_values($existingFiles); // Reindex array
+            $existingFiles = array_values($existingFiles); // Sắp xếp lại chỉ số mảng
         }
 
-        // Add new files
+        // 3. Thêm file mới
         if ($request->hasFile('attached_files')) {
             foreach ($request->file('attached_files') as $file) {
                 $path = $file->store('progress_updates', 'public');
@@ -180,20 +185,18 @@ class ProgressUpdateController extends Controller
             }
         }
 
-        // Update progress update
+        // 4. Lưu cập nhật (Truyền mảng trực tiếp, KHÔNG dùng json_encode)
         $progressUpdate->update([
             'task_id' => $request->task_id,
             'date' => $request->date,
             'progress_percent' => $request->progress_percent,
             'description' => $request->description,
-            'attached_files' => !empty($existingFiles) ? json_encode($existingFiles) : null,
+            'attached_files' => !empty($existingFiles) ? $existingFiles : null,
         ]);
 
-        // Update task progress if this is the latest report
+        // Cập nhật lại task nếu đây là báo cáo mới nhất
         $latestReport = ProgressUpdate::where('task_id', $request->task_id)
-            ->orderBy('date', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->first();
+            ->orderBy('date', 'desc')->first();
         
         if ($latestReport && $latestReport->id == $id) {
             $task = Task::find($request->task_id);
@@ -203,8 +206,8 @@ class ProgressUpdateController extends Controller
             }
         }
 
-        return redirect()->route('tasks.show', $request->task_id)
-            ->with('success', 'Báo cáo tiến độ đã được cập nhật thành công!');
+        return redirect()->route('admin.tasks.show', $request->task_id)
+            ->with('success', 'Báo cáo tiến độ đã được cập nhật!');
     }
 
     /**
@@ -215,21 +218,18 @@ class ProgressUpdateController extends Controller
         $progressUpdate = ProgressUpdate::findOrFail($id);
         $taskId = $progressUpdate->task_id;
         
-        // Delete attached files
-        if ($progressUpdate->attached_files) {
-            $files = json_decode($progressUpdate->attached_files, true);
-            foreach ($files as $file) {
+        // 1. Xóa file vật lý (Model tự cast sang Array)
+        if (!empty($progressUpdate->attached_files)) {
+            foreach ($progressUpdate->attached_files as $file) {
                 Storage::disk('public')->delete($file);
             }
         }
         
         $progressUpdate->delete();
         
-        // Update task progress to latest report
+        // Cập nhật lại task về trạng thái của báo cáo liền trước
         $latestReport = ProgressUpdate::where('task_id', $taskId)
-            ->orderBy('date', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->first();
+            ->orderBy('date', 'desc')->first();
         
         $task = Task::find($taskId);
         if ($task) {
@@ -237,8 +237,8 @@ class ProgressUpdateController extends Controller
             $task->save();
         }
 
-        return redirect()->route('tasks.show', $taskId)
-            ->with('success', 'Báo cáo tiến độ đã được xóa thành công!');
+        return redirect()->route('admin.tasks.show', $taskId)
+            ->with('success', 'Báo cáo tiến độ đã xóa!');
     }
 
     /**
@@ -285,17 +285,28 @@ class ProgressUpdateController extends Controller
     public function downloadFile($id, $filename)
     {
         $progressUpdate = ProgressUpdate::findOrFail($id);
-        $files = json_decode($progressUpdate->attached_files, true) ?? [];
         
-        if (in_array($filename, $files)) {
-            $filePath = storage_path('app/public/' . $filename);
-            
-            if (file_exists($filePath)) {
-                return response()->download($filePath, basename($filename));
+        // Model tự cast sang Array
+        $files = $progressUpdate->attached_files ?? [];
+        
+        // Kiểm tra xem file có trong danh sách database không (an toàn)
+        // Lưu ý: $files lưu đường dẫn đầy đủ 'progress_updates/abc.jpg', còn $filename chỉ là 'abc.jpg'
+        // Nên ta cần check basename hoặc đường dẫn
+        $found = false;
+        $fullPath = '';
+        
+        foreach($files as $f) {
+            if (basename($f) == $filename) {
+                $found = true;
+                $fullPath = $f;
+                break;
             }
         }
         
-        return redirect()->back()
-            ->with('error', 'File không tồn tại hoặc đã bị xóa.');
+        if ($found && Storage::disk('public')->exists($fullPath)) {
+            return Storage::disk('public')->download($fullPath);
+        }
+        
+        return redirect()->back()->with('error', 'File không tồn tại.');
     }
 }

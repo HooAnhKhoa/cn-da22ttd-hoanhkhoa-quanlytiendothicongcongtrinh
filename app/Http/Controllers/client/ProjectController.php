@@ -6,6 +6,7 @@ use App\Models\Project;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ProjectController extends Controller
 {
@@ -16,8 +17,27 @@ class ProjectController extends Controller
     {
         $user = Auth::user();
         
-        $query = Project::where('owner_id', $user->id)
-            ->withSum('contracts', 'contract_value'); // Thêm tổng hợp đồng
+        $query = Project::query();
+
+        // 1. Phân quyền dữ liệu theo User Type
+        // Thay vì chỉ where('owner_id'), ta check linh hoạt
+        if ($user->user_type === 'owner') {
+            $query->where('owner_id', $user->id);
+        } elseif ($user->user_type === 'contractor') {
+            $query->where('contractor_id', $user->id);
+        } elseif ($user->user_type === 'engineer') {
+            $query->where('engineer_id', $user->id);
+        } else {
+            // Trường hợp user có thể đóng nhiều vai trò hoặc admin
+            $query->where(function($q) use ($user) {
+                $q->where('owner_id', $user->id)
+                  ->orWhere('contractor_id', $user->id)
+                  ->orWhere('engineer_id', $user->id);
+            });
+        }
+
+        // Eager load tổng giá trị hợp đồng để hiển thị ngân sách
+        $query->withSum('contracts', 'contract_value');
 
         // 🔍 Tìm kiếm theo tên dự án
         if ($request->filled('search')) {
@@ -37,11 +57,12 @@ class ProjectController extends Controller
             case 'oldest':
                 $query->orderBy('created_at', 'asc');
                 break;
-            
             case 'name':
                 $query->orderBy('project_name', 'asc');
                 break;
-            
+            case 'budget_desc':
+                $query->orderByDesc('contracts_sum_contract_value');
+                break;
             default: // newest
                 $query->orderBy('created_at', 'desc');
                 break;
@@ -52,8 +73,7 @@ class ProjectController extends Controller
         return view('client.projects.index', compact('projects'));
     }
 
-    /** 
-     * Show the form for creating a new resource.
+    /** * Show the form for creating a new resource.
      */
     public function create()
     {
@@ -71,37 +91,43 @@ class ProjectController extends Controller
     /**
      * Display the specified resource.
      */
+    // ProjectController.php - cập nhật phương thức show()
     public function show(Project $project)
     {
         $user = Auth::user();
 
-        // 1. Kiểm tra Quyền hạn (Authorization)
-        // Chỉ cho phép xem nếu User là Chủ đầu tư, Nhà thầu, hoặc Kỹ sư của dự án đó
+        // 1. Check quyền
         if ($project->owner_id !== $user->id && 
             $project->contractor_id !== $user->id && 
             $project->engineer_id !== $user->id) {
             abort(403, 'Bạn không có quyền truy cập vào dự án này.');
         }
 
-        // 2. Eager Loading (Nạp sẵn dữ liệu quan hệ)
-        // Dựa trên các biến được gọi trong View show.blade.php
+        // 2. Nạp dữ liệu SÂU (Deep Eager Loading)
         $project->load([
-            'owner',                // Để hiển thị thông tin Chủ đầu tư
-            'contractor',           // Để hiển thị thông tin Nhà thầu
-            'engineer',             // Để hiển thị thông tin Kỹ sư
-            'sites' => function($query) {
-                // Sắp xếp công trường (tuỳ chọn)
-                $query->orderBy('created_at', 'desc');
+            'owner', 'contractor', 'engineer',
+            'contracts.payments',
+            'documents',
+            
+            // Load Sites -> Tasks -> ProgressUpdates
+            'sites' => function($q) {
+                $q->orderBy('created_at', 'desc');
             },
-            'sites.tasks',          // Cần load tasks trong site để tính toán Progress bar
-            'milestones',           // Để đếm số lượng mốc quan trọng
-            'contracts.contractor', // Để hiển thị tên nhà thầu trong tab Hợp đồng
-            'documents',            // Để hiển thị danh sách tài liệu
+            'sites.tasks' => function($q) {
+                $q->orderBy('start_date', 'asc');
+            },
+            'sites.tasks.progressUpdates' => function($q) {
+                $q->orderBy('date', 'desc');
+            },
+            // Chỉ cần load creator, KHÔNG load images vì ảnh nằm trong attached_files rồi
+            'sites.tasks.progressUpdates.creator', 
         ]);
 
-        // 3. Trả về View
-        // Lưu ý: View bạn gửi nằm ở folder 'client.projects.show' (dựa theo logic folder index)
-        return view('client.projects.show', compact('project'));
+        // 3. Tính toán số liệu tổng quan
+        $totalBudget = $project->contracts->sum('contract_value');
+        $totalPaid = $project->contracts->sum(fn($c) => $c->payments->where('status', 'completed')->sum('amount'));
+
+        return view('client.projects.show', compact('project', 'totalBudget', 'totalPaid'));
     }
 
     /**

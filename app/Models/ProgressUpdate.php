@@ -39,8 +39,9 @@ class ProgressUpdate extends Model
         // Nếu created_by là user_id (integer)
         return $this->belongsTo(User::class, 'created_by');
     }
+    // Trong ProgressUpdate model
     public function reporter()
     {
-        return $this->belongsTo(User::class, 'reported_by');
+        return $this->belongsTo(User::class, 'created_by', 'id');
     }
 }

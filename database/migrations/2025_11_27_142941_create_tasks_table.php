@@ -16,38 +16,30 @@ return new class extends Migration
             $table->foreignId('site_id')->constrained('sites');
             $table->foreignId('parent_id')->nullable()->constrained('tasks');
             $table->foreignId('assigned_engineer_id')->nullable()->constrained('users');
+            
             $table->string('task_code')->unique()->nullable();
             $table->string('task_name');
             $table->text('description')->nullable();
-            $table->decimal('task_budget', 15, 2)->default(0)->comment('Ngân sách cho task này');
+            
+            $table->decimal('task_budget', 15, 2)->default(0);
+            
             $table->date('start_date');
             $table->date('end_date')->nullable();
-            $table->integer('planned_duration')->nullable();
-            $table->integer('actual_duration')->nullable();
+            // Bỏ planned_duration, actual_duration (tính toán khi query)
+            
             $table->unsignedTinyInteger('progress_percent')->default(0);
             
-            // Trạng thái thực hiện
             $table->enum('status', ['planned', 'in_progress', 'pending_review', 'rejected', 'completed', 'on_hold', 'cancelled'])->default('planned');
             
-            // Trạng thái thanh toán cho task
-            $table->enum('payment_status', ['unpaid', 'pending_payment', 'paid', 'overdue'])->default('unpaid');
-            
-            // Đánh giá từ owner
-            $table->text('owner_review')->nullable()->comment('Đánh giá từ chủ đầu tư');
-            $table->tinyInteger('owner_rating')->nullable()->comment('Điểm đánh giá từ 1-5');
-            $table->boolean('is_approved')->default(false)->comment('Đã được owner chấp nhận');
+            // Review
+            $table->text('owner_review')->nullable();
+            $table->tinyInteger('owner_rating')->nullable();
+            $table->boolean('is_approved')->default(false);
             $table->timestamp('approved_at')->nullable();
             $table->foreignId('approved_by')->nullable()->constrained('users');
             
             $table->timestamps();
             $table->softDeletes();
-            
-            // Indexes
-            $table->index(['site_id', 'status']);
-            $table->index(['assigned_engineer_id', 'status']);
-            $table->index(['status', 'payment_status']);
-            $table->index('task_code');
-            $table->index('is_approved');
         });
     }
 
@@ -56,6 +48,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tasks');
+        Schema::dropIfExists('task_reviews');
     }
 };

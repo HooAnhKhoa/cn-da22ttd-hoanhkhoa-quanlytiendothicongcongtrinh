@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Client;
 
-use App\Models\User;
-use App\Models\Project;
-use App\Models\Contract;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Contract;
+use App\Models\Project;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ContractController extends Controller
@@ -19,11 +19,11 @@ class ContractController extends Controller
     const STATUS_ON_HOLD = 'on_hold';
     const STATUS_EXPIRED = 'expired';
 
+    // Note: Payment status is now calculated dynamically, but we keep constants for UI
     const PAYMENT_STATUS_UNPAID = 'unpaid';
     const PAYMENT_STATUS_PARTIALLY_PAID = 'partially_paid';
     const PAYMENT_STATUS_FULLY_PAID = 'fully_paid';
     const PAYMENT_STATUS_OVERDUE = 'overdue';
-    const PAYMENT_STATUS_REFUNDED = 'refunded';
 
     public static function getStatuses()
     {
@@ -38,62 +38,51 @@ class ContractController extends Controller
         ];
     }
 
-    public static function getPaymentStatuses()
-    {
-        return [
-            self::PAYMENT_STATUS_UNPAID => 'Chưa thanh toán',
-            self::PAYMENT_STATUS_PARTIALLY_PAID => 'Thanh toán một phần',
-            self::PAYMENT_STATUS_FULLY_PAID => 'Đã thanh toán đủ',
-            self::PAYMENT_STATUS_OVERDUE => 'Quá hạn thanh toán',
-            self::PAYMENT_STATUS_REFUNDED => 'Đã hoàn tiền',
-        ];
-    }
-
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
-    {   
+    {
         $user = Auth::user();
-        
-        // 1. Sửa từ Project:: sang Contract:: và lọc theo owner_id của Hợp đồng
-        $query = Contract::where(function($q) use ($user) {
-            $q->where('owner_id', $user->id)
-            ->orWhere('contractor_id', $user->id);
-        });
+
+        // 1. QUERY CƠ BẢN: Lọc hợp đồng thuộc về Dự án mà user là Owner hoặc Contractor
+        // Vì bảng contracts không còn owner_id/contractor_id, ta phải query qua relation 'project'
+        $query = Contract::with(['project', 'project.contractor']) // Eager load để tránh N+1
+            ->whereHas('project', function ($q) use ($user) {
+                $q->where('owner_id', $user->id)
+                  ->orWhere('contractor_id', $user->id);
+            });
+
+        // 2. CÁC BỘ LỌC
 
         // Lọc theo trạng thái hợp đồng
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Lọc theo trạng thái thanh toán
-        if ($request->filled('payment_status')) {
-            $query->where('payment_status', $request->payment_status);
-        }
-
-        // Lọc theo dự án
+        // Lọc theo Project
         if ($request->filled('project_id')) {
             $query->where('project_id', $request->project_id);
         }
 
-        // Lọc theo nhà thầu
+        // Lọc theo Nhà thầu (Query qua relationship project)
         if ($request->filled('contractor_id')) {
-            $query->where('contractor_id', $request->contractor_id);
+            $query->whereHas('project', function ($q) use ($request) {
+                $q->where('contractor_id', $request->contractor_id);
+            });
         }
 
-        // Tìm kiếm (giữ nguyên logic của bạn nhưng áp dụng trên $query của Contract)
+        // Tìm kiếm
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('contract_number', 'like', "%{$search}%")
-                ->orWhere('contract_name', 'like', "%{$search}%")
-                ->orWhereHas('project', function($pq) use ($search) {
-                    $pq->where('project_name', 'like', "%{$search}%");
-                })
-                ->orWhereHas('contractor', function($cq) use ($search) {
-                    $cq->where('name', 'like', "%{$search}%");
-                });
+                  ->orWhere('contract_name', 'like', "%{$search}%")
+                  ->orWhereHas('project', function ($pq) use ($search) {
+                      $pq->where('project_name', 'like', "%{$search}%");
+                  })
+                  // Tìm theo tên nhà thầu (thông qua project -> contractor)
+                  ->orWhereHas('project.contractor', function ($cq) use ($search) {
+                      $cq->where('username', 'like', "%{$search}%")
+                         ->orWhere('email', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -109,27 +98,40 @@ class ContractController extends Controller
 
         $contracts = $query->paginate(15)->withQueryString();
 
-        // 2. Chỉ lấy danh sách dự án/đối tác liên quan đến Chủ đầu tư này để hiển thị trong bộ lọc
-        $projects = Project::where('owner_id', $user->id)->get();
-        $contractors = User::where('user_type', 'contractor')
-            ->whereHas('contractedProjects', function($q) use ($user) {
-                $q->where('owner_id', $user->id);
-            })->get();
+        // 3. DỮ LIỆU CHO BỘ LỌC UI
+        // Lấy danh sách dự án của user
+        $projects = Project::where(function($q) use ($user) {
+            $q->where('owner_id', $user->id)
+              ->orWhere('contractor_id', $user->id);
+        })->get();
 
-        // 3. Tính toán thống kê - CẦN LỌC THEO OWNER_ID
-        $statsQuery = Contract::where('owner_id', $user->id);
+        // Lấy danh sách nhà thầu (nếu user là owner)
+        $contractors = [];
+        if ($user->user_type === 'owner') {
+             $contractors = User::where('user_type', 'contractor')
+                ->whereHas('contractedProjects', function ($q) use ($user) {
+                    $q->where('owner_id', $user->id);
+                })->get();
+        }
+
+        // 4. THỐNG KÊ (Sử dụng query builder để tối ưu)
+        // Tạo base query thống kê
+        $baseStatsQuery = Contract::whereHas('project', function ($q) use ($user) {
+            $q->where('owner_id', $user->id)->orWhere('contractor_id', $user->id);
+        });
+
+        $activeCount = (clone $baseStatsQuery)->where('status', 'active')->count();
+        $pendingCount = (clone $baseStatsQuery)->whereIn('status', ['draft', 'pending_signature'])->count();
+        $totalValue = (clone $baseStatsQuery)->sum('contract_value');
         
-        $activeCount = (clone $statsQuery)->where('status', 'active')->count();
-        $pendingCount = (clone $statsQuery)->whereIn('status', ['draft', 'pending_signature'])->count();
-        $totalValue = (clone $statsQuery)->sum('contract_value');
-        $overdueCount = (clone $statsQuery)->where('status', 'active')
+        $overdueCount = (clone $baseStatsQuery)
+            ->where('status', 'active')
             ->where('due_date', '<', now())
             ->count();
 
-        // Lưu ý: Nếu dành cho Client, hãy đổi path view thành 'client.contracts.index'
         return view('client.contracts.index', compact(
-            'contracts', 
-            'projects', 
+            'contracts',
+            'projects',
             'contractors',
             'activeCount',
             'pendingCount',
@@ -137,19 +139,31 @@ class ContractController extends Controller
             'overdueCount'
         ));
     }
+
     public function show(Contract $contract)
     {
-        // Bảo mật: Nếu không phải chủ hợp đồng thì không cho xem
-        if (auth()->id() !== $contract->contractor_id && auth()->id() !== $contract->owner_id) {
-            abort(403);
+        // Load quan hệ cần thiết
+        // Lưu ý: Contract không còn trực tiếp owner/contractor, phải load qua project
+        $contract->load(['project.owner', 'project.contractor', 'payments', 'approvals.approver']);
+
+        $project = $contract->project;
+
+        // BẢO MẬT: Kiểm tra quyền xem thông qua Project
+        // User phải là Owner hoặc Contractor của Project đó
+        if (auth()->id() !== $project->owner_id && auth()->id() !== $project->contractor_id) {
+            abort(403, 'Bạn không có quyền truy cập hợp đồng này.');
         }
 
-        $contract->load(['project', 'owner', 'payments', 'approvals.approver']);
-        
-        $totalPaid = $contract->total_paid;
+        // TÍNH TOÁN SỐ LIỆU (Sử dụng Accessor trong Model Contract)
+        // total_paid và remaining_amount được tính động trong Model
+        $totalPaid = $contract->total_paid; 
         $remaining = $contract->remaining_amount;
-        $progress = $contract->contract_value > 0 ? ($totalPaid / $contract->contract_value) * 100 : 0;
+        
+        $progress = 0;
+        if ($contract->contract_value > 0) {
+            $progress = ($totalPaid / $contract->contract_value) * 100;
+        }
 
-        return view('client.contracts.show', compact('contract', 'totalPaid', 'remaining', 'progress'));
+        return view('client.contracts.show', compact('contract', 'project', 'totalPaid', 'remaining', 'progress'));
     }
 }

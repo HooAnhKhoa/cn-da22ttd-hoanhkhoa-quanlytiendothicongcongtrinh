@@ -20,8 +20,6 @@ return new class extends Migration
             $table->json('attached_files')->nullable();
             $table->foreignId('created_by')->constrained('users');  
             $table->timestamps();
-
-
 // - id
 // - task_id (FK)
 // - date

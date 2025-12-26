@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Site extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     
     protected $fillable = [
         'project_id',
@@ -17,22 +18,21 @@ class Site extends Model
         'site_name',
         'description',
         'total_budget',
-        'paid_amount',
-        // 'remaining_budget',
+        // Đã xóa paid_amount (tính toán động)
         'start_date',
         'end_date',
         'progress_percent',
         'status',
-        'payment_status'
+        // Đã xóa payment_status
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
-        'progress_percent' => 'integer'
+        'progress_percent' => 'integer',
+        'total_budget' => 'decimal:2'
     ];
 
-    // Quan hệ với Project
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
@@ -43,7 +43,6 @@ class Site extends Model
         return $this->hasMany(Task::class);
     }
 
-    // KHÔNG có engineer(), contractor(), supervisor()
     public static function getStatuses(): array
     {
         return [
@@ -55,4 +54,6 @@ class Site extends Model
         ];
     }
     
-}
+    // Tính toán số tiền đã chi cho Site thông qua Task -> Payment (nếu cần)
+    // Hoặc nếu Payment gắn với Contract, thì Site chỉ quản lý tiến độ thi công.
+}   

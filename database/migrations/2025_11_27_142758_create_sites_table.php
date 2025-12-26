@@ -18,28 +18,19 @@ return new class extends Migration
             $table->string('site_name');
             $table->text('description')->nullable();
             
-            // Ngân sách của site (tổng từ các tasks)
+            // Ngân sách (User tự nhập hoặc sum từ task, nhưng nên giữ 1 cột này để làm mốc so sánh)
             $table->decimal('total_budget', 15, 2)->default(0);
-            $table->decimal('paid_amount', 15, 2)->default(0)->comment('Tổng đã thanh toán');
-            $table->decimal('remaining_budget', 15, 2)->virtualAs('total_budget - paid_amount')->comment('Số tiền còn lại (tự động tính)');
             
             $table->date('start_date');
             $table->date('end_date')->nullable();
+            
+            // Tiến độ (Có thể giữ để nhập tay hoặc tính toán)
             $table->decimal('progress_percent', 5, 2)->default(0);
             
-            // Trạng thái site
             $table->enum('status', ['planned', 'pending_contract', 'in_progress', 'completed', 'on_hold', 'cancelled'])->default('planned');
-            
-            // Trạng thái thanh toán
-            $table->enum('payment_status', ['unpaid', 'partially_paid', 'fully_paid', 'overdue'])->default('unpaid');
             
             $table->timestamps();
             $table->softDeletes();
-            
-            // Indexes
-            $table->index(['project_id', 'status']);
-            $table->index(['status', 'payment_status']);
-            $table->index('site_code');
         });
     }
 

@@ -84,7 +84,7 @@ class PaymentsController extends Controller
      */
     public function show(Payment $payment)
     {
-        $payment->load(['contract', 'contract.project', 'contract.customer']);
+        $payment->load(['contract', 'contract.project']);
         return view('admin.payments.show', compact('payment'));
     }
 

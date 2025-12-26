@@ -7,11 +7,11 @@ use App\Models\MaterialUsage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Task extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'site_id',
@@ -23,11 +23,10 @@ class Task extends Model
         'task_budget',
         'start_date',
         'end_date',
-        'planned_duration',
-        'actual_duration',
+        // Đã xóa planned_duration, actual_duration (tính toán từ date)
         'progress_percent',
         'status',
-        'payment_status',
+        // Đã xóa payment_status
         'owner_review',
         'owner_rating',
         'is_approved',
@@ -35,11 +34,22 @@ class Task extends Model
         'approved_by'
     ];
 
-    // Định dạng ngày tháng
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
+        'task_budget' => 'decimal:2',
+        'is_approved' => 'boolean',
+        'approved_at' => 'datetime'
     ];
+
+    // Accessor tính toán Duration
+    public function getPlannedDurationAttribute()
+    {
+        if ($this->start_date && $this->end_date) {
+            return $this->start_date->diffInDays($this->end_date);
+        }
+        return 0;
+    }
 
     public function site()
     {
@@ -61,77 +71,13 @@ class Task extends Model
         return $this->hasMany(ProgressUpdate::class)->orderBy('date', 'desc');
     }
 
-    public function delays()
-    {
-        return $this->hasMany(Delay::class);
-    }
-
     public function materialUsages(): HasMany
     {
         return $this->hasMany(MaterialUsage::class);
     }
-
-    public function equipmentUsages()
+    
+    public function payments()
     {
-        return $this->hasMany(EquipmentUsage::class);
-    }
-
-    public function latestProgressUpdate()
-    {
-        return $this->hasOne(ProgressUpdate::class)->latestOfMany();
-    }
-
-    public function inspections()
-    {
-        return $this->hasMany(Inspection::class);
-    }
-
-    public function issues()
-    {
-        return $this->hasMany(Issue::class);
-    }
-
-    public function progressReports()
-    {
-        return $this->hasMany(ProgressUpdate::class)->orderBy('date', 'desc');
-    }
-
-    public function latestProgressReport()
-    {
-        return $this->hasOne(ProgressUpdate::class)->latestOfMany();
-    }
-
-    public function isStatusCorrect(): bool
-    {
-        $progress = (int) $this->progress_percent;
-        $expectedStatus = '';
-        
-        if ($progress === 0) {
-            $expectedStatus = 'planned';
-        } elseif ($progress > 0 && $progress < 100) {
-            $expectedStatus = 'in_progress';
-        } elseif ($progress === 100) {
-            $expectedStatus = 'completed';
-        }
-        
-        return $this->status === $expectedStatus;
-    }
-
-    /**
-     * Lấy trạng thái tính toán từ tiến độ
-     */
-    public function getCalculatedStatusAttribute(): string
-    {
-        $progress = (int) $this->progress_percent;
-        
-        if ($progress === 0) {
-            return 'planned';
-        } elseif ($progress > 0 && $progress < 100) {
-            return 'in_progress';
-        } elseif ($progress === 100) {
-            return 'completed';
-        }
-        
-        return $this->status;
+        return $this->hasMany(Payment::class);
     }
 }

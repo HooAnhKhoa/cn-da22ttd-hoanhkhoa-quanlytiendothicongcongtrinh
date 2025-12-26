@@ -158,22 +158,18 @@
     </div>
     
     <div class="p-6">
-        @if($task->progressReports->count() > 0)
-            <!-- Timeline View -->
+        @if($task->progressUpdates->count() > 0)
             <div class="relative">
-                <!-- Timeline line -->
                 <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
                 
                 <div class="space-y-8">
-                    @foreach($task->progressReports->sortByDesc('date') as $report)
+                    @foreach($task->progressUpdates->sortByDesc('date') as $report)
                     <div class="relative pl-12">
-                        <!-- Timeline dot -->
                         <div class="absolute left-0 w-8 h-8 bg-blue-100 border-4 border-white rounded-full flex items-center justify-center">
                             <i class="fas fa-flag text-blue-600 text-sm"></i>
                         </div>
                         
-                        <!-- Report card -->
-                        <div class="bg-gray-50 rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                        <div class="bg-gray-5 rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
                             <div class="flex justify-between items-start mb-4">
                                 <div>
                                     <h4 class="font-semibold text-lg text-gray-800">
@@ -186,7 +182,6 @@
                                 </div>
                                 
                                 <div class="text-right">
-                                    <!-- Progress percentage badge -->
                                     <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
                                         @if($report->progress_percent >= 90) bg-green-100 text-green-800
                                         @elseif($report->progress_percent >= 50) bg-blue-100 text-blue-800
@@ -195,7 +190,6 @@
                                         <i class="fas fa-chart-line mr-1"></i>{{ $report->progress_percent }}%
                                     </div>
                                     
-                                    <!-- Action buttons -->
                                     <div class="flex gap-2 mt-2">
                                         <a href="{{ route('admin.progress_updates.show', $report) }}" 
                                            class="text-blue-600 hover:text-blue-800 text-sm">
@@ -218,7 +212,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Progress bar -->
                             <div class="mb-4">
                                 <div class="flex justify-between text-sm text-gray-600 mb-1">
                                     <span>Tiến độ báo cáo</span>
@@ -230,7 +223,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Description -->
                             @if($report->description)
                             <div class="mb-3">
                                 <div class="flex items-center text-gray-700 mb-1">
@@ -243,28 +235,12 @@
                             </div>
                             @endif
                             
-                            <!-- Attached files -->
                             @if($report->attached_files)
                             <div>
                                 <div class="flex items-center text-gray-700 mb-2">
                                     <i class="fas fa-paperclip text-gray-400 mr-2"></i>
                                     <span class="font-medium">Tệp đính kèm:</span>
                                 </div>
-                                {{-- <div class="flex flex-wrap gap-2">
-                                    @php
-                                        $files = json_decode($report->attached_files, true) ?? [$report->attached_files];
-                                    @endphp
-                                    @foreach($files as $file)
-                                    @if($file)
-                                    <a href="{{ Storage::url($file) }}" 
-                                       target="_blank" 
-                                       class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200 transition-colors">
-                                        <i class="fas fa-file mr-1"></i>
-                                        {{ basename($file) }}
-                                    </a>
-                                    @endif
-                                    @endforeach
-                                </div> --}}
                             </div>
                             @endif
                         </div>
@@ -273,26 +249,25 @@
                 </div>
             </div>
             
-            <!-- Summary statistics -->
             <div class="mt-8 pt-6 border-t border-gray-200">
                 <h4 class="font-semibold text-gray-700 mb-4">Thống kê báo cáo:</h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="bg-blue-50 p-4 rounded-lg">
                         <div class="text-blue-600 font-bold text-xl">
-                            {{ $task->progressReports->count() }}
+                            {{ $task->progressUpdates->count() }}
                         </div>
                         <div class="text-gray-600 text-sm">Tổng số báo cáo</div>
                     </div>
                     <div class="bg-green-50 p-4 rounded-lg">
                         <div class="text-green-600 font-bold text-xl">
-                            {{ $task->progressReports->max('progress_percent') ?? 0 }}%
+                            {{ $task->progressUpdates->max('progress_percent') ?? 0 }}%
                         </div>
                         <div class="text-gray-600 text-sm">Tiến độ cao nhất</div>
                     </div>
                     <div class="bg-purple-50 p-4 rounded-lg">
                         <div class="text-purple-600 font-bold text-xl">
-                            @if($task->progressReports->count() > 1)
-                                {{ $task->progressReports->sortByDesc('date')->first()->progress_percent - $task->progressReports->sortBy('date')->first()->progress_percent }}%
+                            @if($task->progressUpdates->count() > 1)
+                                {{ $task->progressUpdates->sortByDesc('date')->first()->progress_percent - $task->progressUpdates->sortBy('date')->first()->progress_percent }}%
                             @else
                                 0%
                             @endif
@@ -303,7 +278,6 @@
             </div>
             
         @else
-            <!-- Empty state -->
             <div class="text-center py-12">
                 <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
                     <i class="fas fa-chart-line text-3xl text-gray-400"></i>

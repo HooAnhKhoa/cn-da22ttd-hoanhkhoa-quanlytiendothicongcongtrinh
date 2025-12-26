@@ -13,51 +13,82 @@ class OwnerContractController extends Controller
 {
     public function approve(Contract $contract)
     {
-        // 1. Kiểm tra bảo mật: Chỉ Chủ đầu tư của hợp đồng này mới được duyệt
-        if ($contract->owner_id !== Auth::id()) {
+        // Load quan hệ project để lấy thông tin chủ đầu tư
+        $contract->load('project');
+
+        // 1. SỬA LỖI BẢO MẬT: Kiểm tra thông qua Project owner_id
+        // Vì bảng contracts đã xóa cột owner_id
+        if (!$contract->project || $contract->project->owner_id !== Auth::id()) {
             return back()->with('error', 'Bạn không có quyền phê duyệt hợp đồng này.');
         }
 
         try {
-            // Sử dụng Transaction để đảm bảo tính toàn vẹn dữ liệu
             DB::transaction(function () use ($contract) {
-                // 2. Cập nhật trạng thái Hợp đồng sang 'active' (đã ký kết)
-                $contract->update(['status' => 'active']);
+                // 2. Cập nhật trạng thái Hợp đồng
+                $contract->update([
+                    'status' => 'active',
+                    'signed_date' => now(), // Cập nhật ngày ký là ngày duyệt (nếu cần)
+                ]);
 
-                // 3. Cập nhật trạng thái Dự án liên quan sang 'in_progress' (Đang thi công)
-                if ($contract->project) {
-                    // Trạng thái 'in_progress' tương ứng với 'Đang thi công' trong model Project
+                // 3. Cập nhật trạng thái Dự án (nếu dự án đang chờ hợp đồng)
+                if ($contract->project && $contract->project->status === 'pending_contract') {
                     $contract->project->update(['status' => 'in_progress']);
                 }
 
-                // 4. Ghi lại lịch sử phê duyệt vào bảng contract_approvals
-                ContractApproval::create([
-                    'contract_id' => $contract->id,
-                    'approver_id' => Auth::id(),
-                    'status'      => 'approved',
-                    'approved_at' => now(),
-                    'comments'    => 'Hợp đồng đã được phê duyệt qua hệ thống bởi Chủ đầu tư.'
-                ]);
+                // 4. Ghi lịch sử phê duyệt (Cập nhật bản ghi pending thành approved)
+                // Thay vì tạo mới luôn, ta nên check xem có bản ghi pending nào không để update
+                $approval = ContractApproval::where('contract_id', $contract->id)
+                    ->where('status', 'pending')
+                    ->first();
 
-                // 5. Tự động tạo bản ghi thanh toán nếu hợp đồng có số tiền tạm ứng (advance_payment)
-                if ($contract->advance_payment > 0) {
-                    Payment::create([
-                        'contract_id'  => $contract->id,
-                        'project_id'   => $contract->project_id,
-                        'amount'       => $contract->advance_payment,
-                        'pay_date'     => now(),
-                        'payment_type' => 'advance', // Loại: Tạm ứng
-                        'status'       => 'pending', // Trạng thái: Chờ thanh toán thực tế
-                        'created_by'   => Auth::id(),
-                        'note'         => "Thanh toán tạm ứng tự động khi phê duyệt hợp đồng " . $contract->contract_number
+                if ($approval) {
+                    $approval->update([
+                        'status'      => 'approved',
+                        'approver_id' => Auth::id(),
+                        'approved_at' => now(),
+                        'reviewed_at' => now(), // Đánh dấu đã xem
+                        'comments'    => 'Đã phê duyệt.'
+                    ]);
+                } else {
+                    // Nếu chưa có thì tạo mới
+                    ContractApproval::create([
+                        'contract_id' => $contract->id,
+                        'approver_id' => Auth::id(),
+                        'status'      => 'approved',
+                        'approved_at' => now(),
+                        'reviewed_at' => now(),
+                        'comments'    => 'Phê duyệt trực tiếp bởi Chủ đầu tư.'
                     ]);
                 }
-            });
 
-            return back()->with('success', 'Hợp đồng đã được phê duyệt thành công. Dự án đã chuyển sang trạng thái thi công.');
+                // 5. Tạo thanh toán tạm ứng (nếu có)
+                if ($contract->advance_payment > 0) {
+                    // Kiểm tra xem đã có thanh toán tạm ứng chưa để tránh trùng lặp
+                    $exists = Payment::where('contract_id', $contract->id)
+                        ->where('payment_type', 'advance')
+                        ->exists();
+
+                    if (!$exists) {
+                        Payment::create([
+                            'contract_id'  => $contract->id,
+                            // Lưu ý: Nếu bạn đã xóa project_id trong bảng payments thì bỏ dòng dưới đi
+                            // 'project_id'   => $contract->project_id, 
+                            'amount'       => $contract->advance_payment,
+                            'pay_date'     => now(),
+                            'payment_type' => 'advance',
+                            'status'       => 'pending',
+                            'created_by'   => Auth::id(),
+                            'method'       => 'bank_transfer', // Mặc định phương thức
+                            'note'         => "Thanh toán tạm ứng hợp đồng " . $contract->contract_number
+                        ]);
+                    }
+                }
+            });
+            $contract->update(['status' => 'active']);
+            return back()->with('success', 'Hợp đồng đã được phê duyệt thành công.');
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Có lỗi xảy ra trong quá trình phê duyệt: ' . $e->getMessage());
+            return back()->with('error', 'Lỗi: ' . $e->getMessage());
         }
     }
 }

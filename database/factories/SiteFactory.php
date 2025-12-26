@@ -16,42 +16,24 @@ class SiteFactory extends Factory
         $startDate = $this->faker->dateTimeBetween('-3 months', '+1 month');
         $endDate = $this->faker->optional(0.8)->dateTimeBetween($startDate, '+6 months');
         
-        $totalBudget = $this->faker->numberBetween(5000000, 50000000);
-        $paidAmount = $this->faker->numberBetween(0, $totalBudget * 0.7);
-        
         return [
             'project_id' => $project->id,
             'site_code' => $this->faker->unique()->bothify('SITE-####'),
             'site_name' => $this->faker->words(2, true) . ' Site',
             'description' => $this->faker->paragraph(),
-            'total_budget' => $totalBudget,
-            'paid_amount' => $paidAmount,
-            // KHÔNG thêm 'remaining_budget' vào đây - nó sẽ tự động tính
+            'total_budget' => $this->faker->numberBetween(5000000, 50000000),
             'start_date' => $startDate,
             'end_date' => $endDate,
             'progress_percent' => $this->faker->numberBetween(0, 100),
             'status' => $this->faker->randomElement(['planned', 'in_progress', 'on_hold', 'completed']),
-            'payment_status' => $this->faker->randomElement(['unpaid', 'partially_paid', 'fully_paid']),
         ];
     }
 
-    // XÓA HOÀN TOÀN phương thức configure() hoặc sửa như sau:
-    public function configure()
-    {
-        return $this->afterCreating(function (Site $site) {
-            // KHÔNG cố gắng set remaining_budget thủ công
-            // remaining_budget sẽ tự động tính từ total_budget - paid_amount
-        });
-    }
-
-    // State methods
     public function planned(): static
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'planned',
             'progress_percent' => 0,
-            'payment_status' => 'unpaid',
-            'paid_amount' => 0,
         ]);
     }
 
@@ -60,8 +42,6 @@ class SiteFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'status' => 'in_progress',
             'progress_percent' => $this->faker->numberBetween(1, 99),
-            'payment_status' => 'partially_paid',
-            'paid_amount' => $this->faker->numberBetween(1000000, $attributes['total_budget'] * 0.7),
         ]);
     }
 
@@ -70,16 +50,7 @@ class SiteFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'status' => 'completed',
             'progress_percent' => 100,
-            'payment_status' => 'fully_paid',
-            'paid_amount' => $attributes['total_budget'],
             'end_date' => $this->faker->dateTimeBetween('-1 month', 'now'),
-        ]);
-    }
-
-    public function withBudget(int $min = 1000000, int $max = 50000000): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'total_budget' => $this->faker->numberBetween($min, $max),
         ]);
     }
 }
